@@ -1,0 +1,109 @@
+---
+layout: post
+title: "jekyll博客的部署"
+date: 2019-08-29 
+description: "jekyll博客的部署"
+tag: 工具
+---   
+  
+
+本篇文章介绍jekyll博客的部署
+ 
+
+## 使用 RVM 安装 Ruby
+
+RVM 能在系统中安装和管理多个 Ruby 版本。同时还能管理不同的 gem 集。支持 OS X、Linux 和其它类 UNIX 操作系统。 
+
+
+### 安装 RVM
+
+	$ gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+	$ curl -sSL https://get.rvm.io | bash -s stable
+安装完成后，会列出一些安装信息，其中有一行要注意：
+	...
+	To start using RVM you need to run `source /etc/profile.d/rvm.sh`
+	....
+	
+意思是如果要开始使用需要执行一个 source 命令来重新执行刚修改的初始化文件，根据安装提示，执行以下命令载入 RVM 环境（新开 Termal 就不用这么做了，会自动重新载入的）
+
+	source /etc/profile.d/rvm.sh
+
+检查一下是否安装正确
+
+	$ rvm -v
+	rvm 1.22.17 (stable) by Wayne E. Seguin <wayneeseguin@gmail.com>, Michal Papis <mpapis@gmail.com> [https://rvm.io/]
+### 用 RVM 安装 Ruby 环境  
+列出已知的 ruby 版本:
+
+	$ rvm list known
+
+可以选择现有的 rvm 版本来进行安装（下面以 rvm 2.6.3 版本的安装为例）
+
+	$ rvm install 2.6.3
+
+同样继续等待漫长的下载，编译过程，完成以后，Ruby, Ruby Gems 就安装好了。
+
+### 设置 Ruby 版本
+
+RVM 装好以后，需要执行下面的命令将指定版本的 Ruby 设置为系统默认版本
+
+	$ rvm 2.6.3 --default
+
+同样，也可以用其他版本号，前提是你有用 rvm install 安装过那个版本
+
+这个时候你可以测试是否正确
+
+	$ ruby -v
+	ruby 2.0.0p247 (2013-06-27 revision 41674) [x86_64-darwin13.0.0]
+
+	$ gem -v
+	2.1.6
+
+### 替换 Ruby 的默认源替换方式如下：
+
+	$ gem source -r https://rubygems.org/
+	$ gem source -a https://gems.ruby-china.com/
+
+要想验证是否替换成功了，可以执行：
+
+$ gem sources -l  
+
+正常的输出结果：
+
+	*** CURRENT SOURCES ***
+
+	https://gems.ruby-china.com/
+
+
+请确保只有 gems.ruby-china.com
+
+### 安装Jekyll
+
+Jekyll中文官方文档 ， 如果你已经安装过了 Jekyll，可以忽略此处。
+
+    $ gem install jekyll
+
+获取博客模板
+
+    $ git clone https://github.com/kellymao/kellymao.github.io.git
+
+或者直接下载博客
+
+### 开启本地服务
+
+    $ jekyll server --host 0.0.0.0 --port 9000 
+在浏览器输入 127.0.0.1:9000 ， 就可以看到博客效果了。
+
+
+如果有错误：
+	gem install bundler
+	cd kellymao.github.io
+	bundler install 
+	
+### 配置github page 
+
+参考： 
+https://www.runoob.com/ruby/ruby-installation-unix.html 
+https://www.studytime.xin/self-blog/2019/01/20/blog-create-github-jekyll.html
+
+
