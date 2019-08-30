@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://0.0.0.0:9000/2019/08/Notepad++%E5%AE%89%E8%A3%85Markdown/</loc>
+<lastmod>2019-08-29T00:00:00+08:00</lastmod>
+</url>
+<url>
+<loc>http://0.0.0.0:9000/2019/08/jekyll%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%83%A8%E7%BD%B2/</loc>
+<lastmod>2019-08-29T00:00:00+08:00</lastmod>
+</url>
+<url>
 <loc>http://0.0.0.0:9000/2019/08/%E6%88%91%E7%9A%84%E6%B5%8B%E8%AF%95%E5%8D%9A%E5%AE%A2/</loc>
 <lastmod>2019-08-29T00:00:00+08:00</lastmod>
+</url>
+<url>
+<loc>http://0.0.0.0:9000/2019/08/TIDB%E7%9A%84%E5%AE%89%E8%A3%85/</loc>
+<lastmod>2019-08-30T00:00:00+08:00</lastmod>
 </url>
 <url>
 <loc>http://0.0.0.0:9000/posts.bk/2015-08-25-HEXO%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</loc>

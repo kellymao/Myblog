@@ -5,9 +5,200 @@
     <description>欢迎来到我的个人站~</description>
     <link>http://0.0.0.0:9000/</link>
     <atom:link href="http://0.0.0.0:9000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 29 Aug 2019 17:41:26 +0800</pubDate>
-    <lastBuildDate>Thu, 29 Aug 2019 17:41:26 +0800</lastBuildDate>
+    <pubDate>Fri, 30 Aug 2019 15:56:36 +0800</pubDate>
+    <lastBuildDate>Fri, 30 Aug 2019 15:56:36 +0800</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>TIDB的安装</title>
+        <description>&lt;p&gt;本篇文章介绍TIDB的安装&lt;/p&gt;
+
+&lt;h3 id=&quot;中控机建用户&quot;&gt;中控机建用户&lt;/h3&gt;
+
+&lt;p&gt;创建 tidb 用户&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;useradd -m -d /home/tidb tidb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;设置 tidb 用户密码
+	passwd tidb&lt;/p&gt;
+
+&lt;p&gt;配置 tidb 用户 sudo 免密码，将 tidb ALL=(ALL) NOPASSWD: ALL 添加到文件末尾即可。
+	tidb ALL=(ALL) NOPASSWD: ALL&lt;/p&gt;
+
+&lt;p&gt;生成 ssh key: 执行 su 命令从 root 用户切换到 tidb 用户下。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# su - tidb
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;创建 tidb 用户 ssh key， 提示 Enter passphrase 时直接回车即可。执行成功后，ssh 私钥文件为 /home/tidb/.ssh/id_rsa， ssh 公钥文件为 /home/tidb/.ssh/id_rsa.pub。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/tidb/.ssh/id_rsa):
+Created directory '/home/tidb/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/tidb/.ssh/id_rsa.
+Your public key has been saved in /home/tidb/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:eIBykszR1KyECA/h0d7PRKz4fhAeli7IrVphhte7/So tidb@172.16.10.49
+The key's randomart image is:
++---[RSA 2048]----+
+|=+o+.o.          |
+|o=o+o.oo         |
+| .O.=.=          |
+| . B.B +         |
+|o B * B S        |
+| * + * +         |
+|  o + .          |
+| o  E+ .         |
+|o   ..+o.        |
++----[SHA256]-----+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;中控机安装ansible-下载包拷贝到hometidb-下&quot;&gt;中控机安装ansible ，下载包。拷贝到/home/tidb 下&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd tidb-ansible
+ansible-playbook local_prepare.yml
+
+cp -r tidb-ansible  /home/tidb 
+ 
+chown tidb.tidb -R /home/tidb/tidb-ansible/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;检查部署目标机ntp&quot;&gt;检查部署目标机ntp&lt;/h3&gt;
+
+&lt;p&gt;执行 ntpstat 命令，输出 synchronised to NTP server(正在与 NTP server 同步)表示在正常同步：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ntpstat
+synchronised to NTP server (85.199.214.101) at stratum 2
+	time correct to within 91 ms
+	polling server every 1024 s
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用以下命令可使 NTP 服务尽快开始同步，pool.ntp.org 可替换为你的 NTP server：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo systemctl stop ntpd.service
+$ sudo ntpdate ntpserver.yyinter.cn
+$ sudo systemctl start ntpd.service
+
+ntpstat
+systemctl status ntpd.service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在 CentOS 7 系统上执行以下命令，可手工安装 NTP 服务：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo yum install ntp ntpdate
+$ sudo systemctl start ntpd.service
+$ sudo systemctl enable ntpd.service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;配置ssh-互信-ntp同步-cpu模式ext4-挂载参数等&quot;&gt;配置ssh 互信， ntp同步， cpu模式，ext4 挂载参数等&lt;/h3&gt;
+
+&lt;p&gt;在中控机上配置部署机器 ssh 互信及 sudo 规则
+参考在中控机上配置部署机器 ssh 互信及 sudo 规则即可。&lt;/p&gt;
+
+&lt;p&gt;目标机关闭防火墙：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;systemctl stop  iptables.service  
+systemctl status iptables.service  
+systemctl status firewalld.service
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;hosts.ini修改为要部署的机器的ip：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;su - tidb 
+cd /home/tidb/tidb-ansible
+ansible-playbook -i hosts.ini create_users.yml -u root -k
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在部署目标机器上安装 NTP 服务
+如果你的部署目标机器时间、时区设置一致，已开启 NTP 服务且在正常同步时间，此步骤可忽略，可参考如何检测 NTP 服务是否正常。&lt;/p&gt;
+
+&lt;p&gt;修改hosts.ini中的配置为局域网ntpserver ：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ntp_server = ntpserver.yyinter.cn
+ 
+$ cd /home/tidb/tidb-ansible
+$ ansible-playbook -i hosts.ini deploy_ntp.yml -u tidb -b
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;参考在部署目标机器上安装 NTP 服务即可。&lt;/p&gt;
+
+&lt;p&gt;在部署目标机器上配置 CPUfreq 调节器模式
+本例中系统支持设置 performance 和 powersave 模式。如果返回 “Not Available”，表示当前系统不支持配置 CPUfreq，跳过该步骤即可。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# cpupower frequency-info --governors
+analyzing CPU 0:
+	available cpufreq governors: Not Available
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;你可以通过 cpupower 命令查看系统当前的 CPUfreq 调节器模式：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# cpupower frequency-info --policy
+analyzing CPU 0:
+	current policy: frequency should be within 1.20 GHz and 3.20 GHz.
+              The governor &quot;powersave&quot; may decide which speed to use
+              within this range.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;参考在部署目标机器上配置 CPUfreq 调节器模式即可。（虚拟机不可以改）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ansible -i hosts.ini all -m shell -a &quot;cpupower frequency-set --governor performance&quot; -u tidb -b
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在部署目标机器上添加数据盘 ext4 文件系统挂载参数
+参考在部署目标机器上添加数据盘 ext4 文件系统挂载参数即可。&lt;/p&gt;
+
+&lt;h3 id=&quot;验证以及部署&quot;&gt;验证以及部署&lt;/h3&gt;
+
+&lt;p&gt;分配机器资源，编辑 inventory.ini 文件&lt;/p&gt;
+
+&lt;p&gt;安装的目录 deplay_dir 修改为 /data ,我的环境的安装目录，默认是/home/tidb/deplay&lt;/p&gt;
+
+&lt;p&gt;执行以下命令如果所有 server 返回 tidb 表示 ssh 互信配置成功。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ansible -i inventory.ini all -m shell -a 'whoami'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;执行以下命令如果所有 server 返回 root 表示 tidb 用户 sudo 免密码配置成功。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ansible -i inventory.ini all -m shell -a 'whoami' -b
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;执行 local_prepare.yml playbook，联网下载 TiDB binary 到中控机：（之前已执行）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ansible-playbook local_prepare.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;初始化系统环境，修改内核参数（此步骤验证机器的配置，不通过修改配置文件）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ansible-playbook bootstrap.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;部署 TiDB 集群软件&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ansible-playbook deploy.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;初始化环境，检查相关的参数，部署通不过修改对应的值&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim roles/check_system_optional/defaults/main.yml  
+
+vim  /home/tidb/tidb-ansible/roles/machine_benchmark/defaults/main.yml 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;参考文档：&lt;a href=&quot;https://pingcap.com/docs-cn/v3.0/how-to/deploy/orchestrated/offline-ansible/&quot;&gt;部署tidb&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 30 Aug 2019 00:00:00 +0800</pubDate>
+        <link>http://0.0.0.0:9000/2019/08/TIDB%E7%9A%84%E5%AE%89%E8%A3%85/</link>
+        <guid isPermaLink="true">http://0.0.0.0:9000/2019/08/TIDB%E7%9A%84%E5%AE%89%E8%A3%85/</guid>
+        
+        <category>TIDB学习</category>
+        
+        
+      </item>
     
       <item>
         <title>我的测试博客</title>
@@ -219,7 +410,162 @@ hexo version  #查看Hexo的版本
         <link>http://0.0.0.0:9000/2019/08/%E6%88%91%E7%9A%84%E6%B5%8B%E8%AF%95%E5%8D%9A%E5%AE%A2/</link>
         <guid isPermaLink="true">http://0.0.0.0:9000/2019/08/%E6%88%91%E7%9A%84%E6%B5%8B%E8%AF%95%E5%8D%9A%E5%AE%A2/</guid>
         
-        <category>TIDB</category>
+        <category>工具</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>jekyll博客的部署</title>
+        <description>&lt;p&gt;本篇文章介绍jekyll博客的部署&lt;/p&gt;
+
+&lt;h2 id=&quot;使用-rvm-安装-ruby&quot;&gt;使用 RVM 安装 Ruby&lt;/h2&gt;
+
+&lt;p&gt;RVM 能在系统中安装和管理多个 Ruby 版本。同时还能管理不同的 gem 集。支持 OS X、Linux 和其它类 UNIX 操作系统。&lt;/p&gt;
+
+&lt;h3 id=&quot;安装-rvm&quot;&gt;安装 RVM&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+$ curl -sSL https://get.rvm.io | bash -s stable 安装完成后，会列出一些安装信息，其中有一行要注意：
+...
+To start using RVM you need to run `source /etc/profile.d/rvm.sh`
+....
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;意思是如果要开始使用需要执行一个 source 命令来重新执行刚修改的初始化文件，根据安装提示，执行以下命令载入 RVM 环境（新开 Termal 就不用这么做了，会自动重新载入的）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;source /etc/profile.d/rvm.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;检查一下是否安装正确&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ rvm -v
+rvm 1.22.17 (stable) by Wayne E. Seguin &amp;lt;wayneeseguin@gmail.com&amp;gt;, Michal Papis &amp;lt;mpapis@gmail.com&amp;gt; [https://rvm.io/] ### 用 RVM 安装 Ruby 环境   列出已知的 ruby 版本:
+
+$ rvm list known
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以选择现有的 rvm 版本来进行安装（下面以 rvm 2.6.3 版本的安装为例）&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ rvm install 2.6.3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;同样继续等待漫长的下载，编译过程，完成以后，Ruby, Ruby Gems 就安装好了。&lt;/p&gt;
+
+&lt;h3 id=&quot;设置-ruby-版本&quot;&gt;设置 Ruby 版本&lt;/h3&gt;
+
+&lt;p&gt;RVM 装好以后，需要执行下面的命令将指定版本的 Ruby 设置为系统默认版本&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ rvm 2.6.3 --default
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;同样，也可以用其他版本号，前提是你有用 rvm install 安装过那个版本&lt;/p&gt;
+
+&lt;p&gt;这个时候你可以测试是否正确&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ ruby -v
+ruby 2.0.0p247 (2013-06-27 revision 41674) [x86_64-darwin13.0.0]
+
+$ gem -v
+2.1.6
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;替换-ruby-的默认源替换方式如下&quot;&gt;替换 Ruby 的默认源替换方式如下：&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ gem source -r https://rubygems.org/
+$ gem source -a https://gems.ruby-china.com/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;要想验证是否替换成功了，可以执行：&lt;/p&gt;
+
+&lt;p&gt;$ gem sources -l&lt;/p&gt;
+
+&lt;p&gt;正常的输出结果：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;*** CURRENT SOURCES ***
+
+https://gems.ruby-china.com/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;请确保只有 gems.ruby-china.com&lt;/p&gt;
+
+&lt;h3 id=&quot;安装jekyll&quot;&gt;安装Jekyll&lt;/h3&gt;
+
+&lt;p&gt;Jekyll中文官方文档 ， 如果你已经安装过了 Jekyll，可以忽略此处。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ gem install jekyll
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;配置-bundler-的-gem-源代码镜像命令&quot;&gt;配置 Bundler 的 Gem 源代码镜像命令&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ bundle config mirror.https://rubygems.org https://gems.ruby-china.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;获取博客模板&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ git clone https://github.com/kellymao/kellymao.github.io.git
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;或者直接下载博客&lt;/p&gt;
+
+&lt;h3 id=&quot;开启本地服务&quot;&gt;开启本地服务&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ jekyll server --host 0.0.0.0 --port 9000  在浏览器输入 127.0.0.1:9000 ， 就可以看到博客效果了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;如果有错误：
+	gem install bundler
+	cd kellymao.github.io
+	bundler install&lt;/p&gt;
+
+&lt;h3 id=&quot;配置github-page&quot;&gt;配置github page&lt;/h3&gt;
+
+&lt;p&gt;参考：&lt;/p&gt;
+
+&lt;p&gt;https://www.runoob.com/ruby/ruby-installation-unix.html&lt;/p&gt;
+
+&lt;p&gt;https://www.studytime.xin/self-blog/2019/01/20/blog-create-github-jekyll.html&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 29 Aug 2019 00:00:00 +0800</pubDate>
+        <link>http://0.0.0.0:9000/2019/08/jekyll%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%83%A8%E7%BD%B2/</link>
+        <guid isPermaLink="true">http://0.0.0.0:9000/2019/08/jekyll%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%83%A8%E7%BD%B2/</guid>
+        
+        <category>工具</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>notepad++安装markdown</title>
+        <description>&lt;p&gt;　　本篇文章介绍如何在notepad++安装markdown&lt;/p&gt;
+
+&lt;h2 id=&quot;正文&quot;&gt;正文：&lt;/h2&gt;
+
+&lt;h3 id=&quot;导入语言格式文件&quot;&gt;导入语言格式文件&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;到Github下载语言格式文件，下载地址：&lt;a href=&quot;https://github.com/Edditoria/markdown-plus-plus&quot;&gt;markdown-plus-plus&lt;/a&gt;，下载完成后，解压文件。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;打开Notepad++，点击语言-&amp;gt;自定义语言格式-&amp;gt;导入，选择解压文件中的theme-default\userDefinedLang-markdown.default.modern.xml导入。&lt;/li&gt;
+  &lt;li&gt;重启Notepad++，点击语言菜单中出现Markdown选项，操作成功。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;预览插件&quot;&gt;预览插件&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;到Github下载预览插件，下载地址：&lt;a href=&quot;https://github.com/nea/MarkdownViewerPlusPlus/releases&quot;&gt;MarkdownViewerPlusPlus&lt;/a&gt;,下载完成后，解压文件。&lt;/li&gt;
+  &lt;li&gt;打开Notepad++，点击设置-&amp;gt;导入-&amp;gt;导入插件，选择解压文件中的MarkdownViewerPlusPlus-0.8.2-x64\MarkdownViewerPlusPlus.dll导入。&lt;/li&gt;
+  &lt;li&gt;重启Notepad++，工具栏出现Markdown图片，点击打开，操作成功。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;参考链接: &lt;a href=&quot;https://my.oschina.net/u/2424727/blog/1921658&quot;&gt;markdown安装&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 29 Aug 2019 00:00:00 +0800</pubDate>
+        <link>http://0.0.0.0:9000/2019/08/Notepad++%E5%AE%89%E8%A3%85Markdown/</link>
+        <guid isPermaLink="true">http://0.0.0.0:9000/2019/08/Notepad++%E5%AE%89%E8%A3%85Markdown/</guid>
+        
+        <category>工具</category>
         
         
       </item>
