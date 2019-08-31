@@ -6,17 +6,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>TIDB的安装</title>
-  <meta name="description" content="本篇文章介绍TIDB的安装">
+  <title>Go语言结构体（struct）</title>
+  <meta name="description" content="本篇文章介绍Go语言结构体（struct）">
   <meta name="author" content="leopardpan">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="TIDB的安装">
-  <meta name="twitter:description" content="本篇文章介绍TIDB的安装">
+  <meta name="twitter:title" content="Go语言结构体（struct）">
+  <meta name="twitter:description" content="本篇文章介绍Go语言结构体（struct）">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="TIDB的安装">
-  <meta property="og:description" content="本篇文章介绍TIDB的安装">
+  <meta property="og:title" content="Go语言结构体（struct）">
+  <meta property="og:description" content="本篇文章介绍Go语言结构体（struct）">
   
   <link rel="icon" type="image/png" href="/images/favicon.png" />
   <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://0.0.0.0:9000/2019/08/TIDB%E7%9A%84%E5%AE%89%E8%A3%85/">
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/08/%E7%BB%93%E6%9E%84%E4%BD%93/">
   <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -156,7 +156,7 @@
         <div class="content-wrapper__inner">
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
-    <h1 class="post-title">TIDB的安装</h1>
+    <h1 class="post-title">Go语言结构体（struct）</h1>
     <div class="post-meta">
       <img src="/images/calendar.png" width="20px"/> 
       <time datetime="2019-08-30 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-08-30</time>  
@@ -167,185 +167,98 @@
   </header>
 
   <section class="post">
-    <p>本篇文章介绍TIDB的安装</p>
+    <p>本篇文章介绍Go语言结构体（struct）</p>
 
-<h3 id="中控机建用户">中控机建用户</h3>
+<h3 id="结构体定义">结构体定义</h3>
 
-<p>创建 tidb 用户</p>
+<h5 id="1-结构体的定义格式">1. 结构体的定义格式</h5>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>useradd -m -d /home/tidb tidb
+<p>使用结构体可以表示一个包含 X 和 Y 整型分量的点结构，代码如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Point struct {
+	X int
+	Y int
+}
 </code></pre></div></div>
 
-<p>设置 tidb 用户密码
-	passwd tidb</p>
+<h5 id="2-同类型的变量在一行的定义格式">2. 同类型的变量在一行的定义格式</h5>
 
-<p>配置 tidb 用户 sudo 免密码，将 tidb ALL=(ALL) NOPASSWD: ALL 添加到文件末尾即可。
-	tidb ALL=(ALL) NOPASSWD: ALL</p>
+<p>颜色的红、绿、蓝 3 个分量可以使用 byte 类型表示，定义的颜色结构体如下：</p>
 
-<p>生成 ssh key: 执行 su 命令从 root 用户切换到 tidb 用户下。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># su - tidb
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Color struct {
+	R, G, B byte
+}
 </code></pre></div></div>
 
-<p>创建 tidb 用户 ssh key， 提示 Enter passphrase 时直接回车即可。执行成功后，ssh 私钥文件为 /home/tidb/.ssh/id_rsa， ssh 公钥文件为 /home/tidb/.ssh/id_rsa.pub。</p>
+<p>结构体的定义只是一种内存布局的描述，只有当结构体实例化时，才会真正地分配内存。</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ssh-keygen -t rsa
-Generating public/private rsa key pair.
-Enter file in which to save the key (/home/tidb/.ssh/id_rsa):
-Created directory '/home/tidb/.ssh'.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-Your identification has been saved in /home/tidb/.ssh/id_rsa.
-Your public key has been saved in /home/tidb/.ssh/id_rsa.pub.
-The key fingerprint is:
-SHA256:eIBykszR1KyECA/h0d7PRKz4fhAeli7IrVphhte7/So tidb@172.16.10.49
-The key's randomart image is:
-+---[RSA 2048]----+
-|=+o+.o.          |
-|o=o+o.oo         |
-| .O.=.=          |
-| . B.B +         |
-|o B * B S        |
-| * + * +         |
-|  o + .          |
-| o  E+ .         |
-|o   ..+o.        |
-+----[SHA256]-----+
+<h5 id="3-不可导出的变量不能被其他包所引用">3. 不可导出的变量不能被其他包所引用</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">p</span>
+<span class="n">type</span> <span class="n">T</span> <span class="n">struct</span><span class="p">{</span> <span class="n">a</span><span class="err">，</span><span class="n">b</span> <span class="n">int</span> <span class="p">}</span>       <span class="p">//</span> <span class="n">a</span> <span class="err">和</span> <span class="n">b</span> <span class="err">都是不可导出的，私有的变量</span>
+
+<span class="k">package</span> <span class="n">q</span>
+<span class="n">import</span> <span class="s2">"p"</span>
+<span class="n">var</span> <span class="n">_</span> <span class="p">=</span> <span class="n">p</span><span class="p">.</span><span class="n">T</span><span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="m">1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="m">2</span><span class="p">}</span>         <span class="p">//</span><span class="err">编译错误，无法引用</span> <span class="n">a</span><span class="err">、</span><span class="n">b</span>
+<span class="n">var</span> <span class="n">_</span> <span class="p">=</span> <span class="n">p</span><span class="p">.</span><span class="n">T</span><span class="p">{</span><span class="n">l</span><span class="p">,</span> <span class="m">2</span><span class="p">}</span>               <span class="p">//</span><span class="err">编译错误，无法引用</span> <span class="n">a</span><span class="err">、</span><span class="n">b</span>
 </code></pre></div></div>
 
-<h3 id="中控机安装ansible-下载包拷贝到hometidb-下">中控机安装ansible ，下载包。拷贝到/home/tidb 下</h3>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd tidb-ansible
-ansible-playbook local_prepare.yml
+<p>虽然上面的最后一行代码没有显式地提到不可导出变量，但是它们被隐式地引用了，所以这也是不允许的。</p>
 
-cp -r tidb-ansible  /home/tidb 
- 
-chown tidb.tidb -R /home/tidb/tidb-ansible/
+<h3 id="结构体初始化">结构体初始化</h3>
+
+<h5 id="1-使用键值对填充结构体的例子">1. 使用键值对填充结构体的例子</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type People struct {
+	name  string
+	child *People
+}
+
+relation := &amp;People{
+	name: "爷爷",
+	child: &amp;People{
+		name: "爸爸",
+		child: &amp;People{
+				name: "我",
+		},
+	},
+}
 </code></pre></div></div>
 
-<h3 id="检查部署目标机ntp">检查部署目标机ntp</h3>
+<h5 id="匿名结构体的初始化">匿名结构体的初始化</h5>
 
-<p>执行 ntpstat 命令，输出 synchronised to NTP server(正在与 NTP server 同步)表示在正常同步：</p>
+<p>在本例中，使用匿名结构体的方式定义和初始化一个消息结构，这个消息结构具有消息标示部分（ID）和数据部分（data）。打印消息内容的 printMsg() 函数在接收匿名结构体时需要在参数上重新定义匿名结构体，代码如下：</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ntpstat
-synchronised to NTP server (85.199.214.101) at stratum 2
-	time correct to within 91 ms
-	polling server every 1024 s
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+<span class="p">//</span> <span class="err">打印消息类型</span><span class="p">,</span> <span class="err">传入匿名结构体</span>
+<span class="n">func</span> <span class="n">printMsgType</span><span class="p">(</span><span class="n">msg</span> <span class="p">*</span><span class="n">struct</span> <span class="p">{</span>
+	<span class="n">id</span>   <span class="n">int</span>
+	<span class="n">data</span> <span class="k">string</span>
+<span class="p">})</span> <span class="p">{</span>
+
+	<span class="p">//</span> <span class="err">使用动词</span><span class="p">%</span><span class="n">T</span><span class="err">打印</span><span class="n">msg</span><span class="err">的类型</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%T</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+
+	<span class="p">//</span> <span class="err">实例化一个匿名结构体</span>
+	<span class="n">msg</span> <span class="p">:=</span> <span class="p">&amp;</span><span class="n">struct</span> <span class="p">{</span>  <span class="p">//</span> <span class="err">定义部分</span>
+		<span class="n">id</span>   <span class="n">int</span>
+		<span class="n">data</span> <span class="k">string</span>
+	<span class="p">}{</span>  <span class="p">//</span> <span class="err">值初始化部分</span>
+		<span class="m">1024</span><span class="p">,</span>
+		<span class="s2">"hello"</span><span class="p">,</span>
+	<span class="p">}</span>
+
+	<span class="n">printMsgType</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="p">}</span>
 </code></pre></div></div>
-
-<p>使用以下命令可使 NTP 服务尽快开始同步，pool.ntp.org 可替换为你的 NTP server：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo systemctl stop ntpd.service
-$ sudo ntpdate ntpserver.yyinter.cn
-$ sudo systemctl start ntpd.service
-
-ntpstat
-systemctl status ntpd.service
-</code></pre></div></div>
-
-<p>在 CentOS 7 系统上执行以下命令，可手工安装 NTP 服务：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo yum install ntp ntpdate
-$ sudo systemctl start ntpd.service
-$ sudo systemctl enable ntpd.service
-</code></pre></div></div>
-
-<h3 id="配置ssh-互信-ntp同步-cpu模式ext4-挂载参数等">配置ssh 互信， ntp同步， cpu模式，ext4 挂载参数等</h3>
-
-<p>在中控机上配置部署机器 ssh 互信及 sudo 规则
-参考在中控机上配置部署机器 ssh 互信及 sudo 规则即可。</p>
-
-<p>目标机关闭防火墙：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl stop  iptables.service  
-systemctl status iptables.service  
-systemctl status firewalld.service
-</code></pre></div></div>
-
-<p>hosts.ini修改为要部署的机器的ip：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>su - tidb 
-cd /home/tidb/tidb-ansible
-ansible-playbook -i hosts.ini create_users.yml -u root -k
-</code></pre></div></div>
-
-<p>在部署目标机器上安装 NTP 服务
-如果你的部署目标机器时间、时区设置一致，已开启 NTP 服务且在正常同步时间，此步骤可忽略，可参考如何检测 NTP 服务是否正常。</p>
-
-<p>修改hosts.ini中的配置为局域网ntpserver ：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ntp_server = ntpserver.yyinter.cn
- 
-$ cd /home/tidb/tidb-ansible
-$ ansible-playbook -i hosts.ini deploy_ntp.yml -u tidb -b
-</code></pre></div></div>
-
-<p>参考在部署目标机器上安装 NTP 服务即可。</p>
-
-<p>在部署目标机器上配置 CPUfreq 调节器模式
-本例中系统支持设置 performance 和 powersave 模式。如果返回 “Not Available”，表示当前系统不支持配置 CPUfreq，跳过该步骤即可。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cpupower frequency-info --governors
-analyzing CPU 0:
-	available cpufreq governors: Not Available
-</code></pre></div></div>
-
-<p>你可以通过 cpupower 命令查看系统当前的 CPUfreq 调节器模式：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># cpupower frequency-info --policy
-analyzing CPU 0:
-	current policy: frequency should be within 1.20 GHz and 3.20 GHz.
-              The governor "powersave" may decide which speed to use
-              within this range.
-</code></pre></div></div>
-
-<p>参考在部署目标机器上配置 CPUfreq 调节器模式即可。（虚拟机不可以改）</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ansible -i hosts.ini all -m shell -a "cpupower frequency-set --governor performance" -u tidb -b
-</code></pre></div></div>
-
-<p>在部署目标机器上添加数据盘 ext4 文件系统挂载参数
-参考在部署目标机器上添加数据盘 ext4 文件系统挂载参数即可。</p>
-
-<h3 id="验证以及部署">验证以及部署</h3>
-
-<p>分配机器资源，编辑 inventory.ini 文件</p>
-
-<p>安装的目录 deplay_dir 修改为 /data ,我的环境的安装目录，默认是/home/tidb/deplay</p>
-
-<p>执行以下命令如果所有 server 返回 tidb 表示 ssh 互信配置成功。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ansible -i inventory.ini all -m shell -a 'whoami'
-</code></pre></div></div>
-
-<p>执行以下命令如果所有 server 返回 root 表示 tidb 用户 sudo 免密码配置成功。</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ansible -i inventory.ini all -m shell -a 'whoami' -b
-</code></pre></div></div>
-
-<p>执行 local_prepare.yml playbook，联网下载 TiDB binary 到中控机：（之前已执行）</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ansible-playbook local_prepare.yml
-</code></pre></div></div>
-
-<p>初始化系统环境，修改内核参数（此步骤验证机器的配置，不通过修改配置文件）</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ansible-playbook bootstrap.yml
-</code></pre></div></div>
-
-<p>部署 TiDB 集群软件</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ansible-playbook deploy.yml
-</code></pre></div></div>
-
-<p>初始化环境，检查相关的参数，部署通不过修改对应的值</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim roles/check_system_optional/defaults/main.yml  
-
-vim  /home/tidb/tidb-ansible/roles/machine_benchmark/defaults/main.yml 
-</code></pre></div></div>
-
-<p>参考文档：<a href="https://pingcap.com/docs-cn/v3.0/how-to/deploy/orchestrated/offline-ansible/">部署tidb</a></p>
-
 
 
   </section>
@@ -415,15 +328,10 @@ vim  /home/tidb/tidb-ansible/roles/machine_benchmark/defaults/main.yml
        <ul class="pager">
         
         <li class="previous">
-            <a href="/2019/08/%E6%88%91%E7%9A%84%E6%B5%8B%E8%AF%95%E5%8D%9A%E5%AE%A2/" data-toggle="tooltip" data-placement="top" title="我的测试博客">上一篇：  <span>我的测试博客</span>
+            <a href="/2019/08/TIDB%E7%9A%84%E5%AE%89%E8%A3%85/" data-toggle="tooltip" data-placement="top" title="TIDB的安装">上一篇：  <span>TIDB的安装</span>
             </a>
         </li>
         
-        
-        <li class="next">
-            <a href="/2019/08/%E7%BB%93%E6%9E%84%E4%BD%93/" data-toggle="tooltip" data-placement="top" title="Go语言结构体（struct）">下一篇：  <span>Go语言结构体（struct）</span>
-            </a>
-        </li>
         
     </ul>
 </section>
