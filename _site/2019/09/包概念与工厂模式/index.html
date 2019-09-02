@@ -6,17 +6,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>Go语言结构体（struct）</title>
-  <meta name="description" content="本篇文章介绍Go语言结构体（struct）">
+  <title>包概念与工厂模式</title>
+  <meta name="description" content="工厂模式自动注册——管理多个包的结构体">
   <meta name="author" content="leopardpan">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Go语言结构体（struct）">
-  <meta name="twitter:description" content="本篇文章介绍Go语言结构体（struct）">
+  <meta name="twitter:title" content="包概念与工厂模式">
+  <meta name="twitter:description" content="工厂模式自动注册——管理多个包的结构体">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Go语言结构体（struct）">
-  <meta property="og:description" content="本篇文章介绍Go语言结构体（struct）">
+  <meta property="og:title" content="包概念与工厂模式">
+  <meta property="og:description" content="工厂模式自动注册——管理多个包的结构体">
   
   <link rel="icon" type="image/png" href="/images/favicon.png" />
   <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://0.0.0.0:9000/2019/08/%E7%BB%93%E6%9E%84%E4%BD%93/">
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/09/%E5%8C%85%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/">
   <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -156,10 +156,10 @@
         <div class="content-wrapper__inner">
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
-    <h1 class="post-title">Go语言结构体（struct）</h1>
+    <h1 class="post-title">包概念与工厂模式</h1>
     <div class="post-meta">
       <img src="/images/calendar.png" width="20px"/> 
-      <time datetime="2019-08-30 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-08-30</time>  
+      <time datetime="2019-09-02 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-09-02</time>  
          
       <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
     </p>
@@ -167,278 +167,132 @@
   </header>
 
   <section class="post">
-    <p>本篇文章介绍Go语言结构体（struct）</p>
+    <h3 id="工厂模式自动注册管理多个包的结构体">工厂模式自动注册——管理多个包的结构体</h3>
 
-<h3 id="结构体定义">结构体定义</h3>
+<p>本例利用包的 init 特性，将 cls1 和 cls2 两个包注册到工厂，使用字符串创建这两个注册好的结构实例。</p>
 
-<h5 id="1-结构体的定义格式">1. 结构体的定义格式</h5>
-
-<p>使用结构体可以表示一个包含 X 和 Y 整型分量的点结构，代码如下：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Point struct {
-	X int
-	Y int
-}
+<p>完整代码的结构如下：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; .
+&gt; └── src
+&gt;     └── chapter08
+&gt;         └── clsfactory
+&gt;             ├── main.go
+&gt;             └── base
+&gt;                 └── factory.go
+&gt;             └── cls1
+&gt;                 └── reg.go
+&gt;             └── cls2
+&gt;                 └── reg.go
+				
 </code></pre></div></div>
 
-<h5 id="2-同类型的变量在一行的定义格式">2. 同类型的变量在一行的定义格式</h5>
+<h5 id="clsfactorybasefactorygo">clsfactory/base/factory.go</h5>
 
-<p>颜色的红、绿、蓝 3 个分量可以使用 byte 类型表示，定义的颜色结构体如下：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">base</span>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Color struct {
-	R, G, B byte
-}
-</code></pre></div></div>
+<span class="p">//</span> <span class="err">定义一个借口</span><span class="n">Class</span> <span class="p">,</span> <span class="err">将结构体返回给接口即可</span> 
 
-<p>结构体的定义只是一种内存布局的描述，只有当结构体实例化时，才会真正地分配内存。</p>
+<span class="n">type</span> <span class="n">Class</span> <span class="n">interface</span> <span class="p">{</span>
 
-<h5 id="3-不可导出的变量不能被其他包所引用">3. 不可导出的变量不能被其他包所引用</h5>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">p</span>
-<span class="n">type</span> <span class="n">T</span> <span class="n">struct</span><span class="p">{</span> <span class="n">a</span><span class="err">，</span><span class="n">b</span> <span class="n">int</span> <span class="p">}</span>       <span class="p">//</span> <span class="n">a</span> <span class="err">和</span> <span class="n">b</span> <span class="err">都是不可导出的，私有的变量</span>
-
-<span class="k">package</span> <span class="n">q</span>
-<span class="n">import</span> <span class="s2">"p"</span>
-<span class="n">var</span> <span class="n">_</span> <span class="p">=</span> <span class="n">p</span><span class="p">.</span><span class="n">T</span><span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="m">1</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="m">2</span><span class="p">}</span>         <span class="p">//</span><span class="err">编译错误，无法引用</span> <span class="n">a</span><span class="err">、</span><span class="n">b</span>
-<span class="n">var</span> <span class="n">_</span> <span class="p">=</span> <span class="n">p</span><span class="p">.</span><span class="n">T</span><span class="p">{</span><span class="n">l</span><span class="p">,</span> <span class="m">2</span><span class="p">}</span>               <span class="p">//</span><span class="err">编译错误，无法引用</span> <span class="n">a</span><span class="err">、</span><span class="n">b</span>
-</code></pre></div></div>
-
-<p>虽然上面的最后一行代码没有显式地提到不可导出变量，但是它们被隐式地引用了，所以这也是不允许的。</p>
-
-<h3 id="结构体初始化">结构体初始化</h3>
-
-<h5 id="1-使用键值对填充结构体的例子">1. 使用键值对填充结构体的例子</h5>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type People struct {
-	name  string
-	child *People
-}
-
-relation := &amp;People{
-	name: "爷爷",
-	child: &amp;People{
-		name: "爸爸",
-		child: &amp;People{
-				name: "我",
-		},
-	},
-}
-</code></pre></div></div>
-
-<h5 id="2-匿名结构体的初始化">2. 匿名结构体的初始化</h5>
-
-<p>在本例中，使用匿名结构体的方式定义和初始化一个消息结构，这个消息结构具有消息标示部分（ID）和数据部分（data）。打印消息内容的 printMsg() 函数在接收匿名结构体时需要在参数上重新定义匿名结构体，代码如下：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
-
-<span class="n">import</span> <span class="p">(</span>
-	<span class="s2">"fmt"</span>
-<span class="p">)</span>
-
-<span class="p">//</span> <span class="err">打印消息类型</span><span class="p">,</span> <span class="err">传入匿名结构体</span>
-<span class="n">func</span> <span class="n">printMsgType</span><span class="p">(</span><span class="n">msg</span> <span class="p">*</span><span class="n">struct</span> <span class="p">{</span>
-	<span class="n">id</span>   <span class="n">int</span>
-	<span class="n">data</span> <span class="k">string</span>
-<span class="p">})</span> <span class="p">{</span>
-
-	<span class="p">//</span> <span class="err">使用动词</span><span class="p">%</span><span class="n">T</span><span class="err">打印</span><span class="n">msg</span><span class="err">的类型</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%T</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+	<span class="n">Know</span><span class="p">()</span> 
 <span class="p">}</span>
 
-<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+<span class="n">var</span> <span class="n">clsmap</span> <span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="n">func</span><span class="p">()</span><span class="n">Class</span> <span class="p">=</span> <span class="n">make</span><span class="p">(</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="n">func</span><span class="p">()</span><span class="n">Class</span><span class="p">)</span>
 
-	<span class="p">//</span> <span class="err">实例化一个匿名结构体</span>
-	<span class="n">msg</span> <span class="p">:=</span> <span class="p">&amp;</span><span class="n">struct</span> <span class="p">{</span>  <span class="p">//</span> <span class="err">定义部分</span>
-		<span class="n">id</span>   <span class="n">int</span>
-		<span class="n">data</span> <span class="k">string</span>
-	<span class="p">}{</span>  <span class="p">//</span> <span class="err">值初始化部分</span>
-		<span class="m">1024</span><span class="p">,</span>
-		<span class="s2">"hello"</span><span class="p">,</span>
-	<span class="p">}</span>
 
-	<span class="n">printMsgType</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="n">func</span> <span class="n">Registermap</span><span class="p">(</span><span class="n">name</span> <span class="k">string</span><span class="p">,</span> <span class="n">f</span> <span class="n">func</span><span class="p">()</span><span class="n">Class</span><span class="p">){</span>
+
+	<span class="n">clsmap</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="p">=</span> <span class="n">f</span> 
+
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="n">Callmap</span><span class="p">(</span><span class="n">name</span> <span class="k">string</span><span class="p">){</span>
+
+	<span class="n">f_func</span> <span class="p">:=</span> <span class="n">clsmap</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+	
+	<span class="n">cls</span><span class="p">:=</span><span class="n">f_func</span><span class="p">()</span> 
+	<span class="n">cls</span><span class="p">.</span><span class="n">Know</span><span class="p">()</span> 
+	
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h3 id="结构体构造函数">结构体构造函数</h3>
+<h5 id="clsfactorycls1reggo">clsfactory/cls1/reg.go</h5>
 
-<h5 id="1-模拟结构体构造函数重载">1. 模拟结构体构造函数重载</h5>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">cls1</span> 
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Cat struct{
+<span class="n">import</span> <span class="s2">"clsfactory/base"</span>
+<span class="n">import</span> <span class="s2">"fmt"</span> 
 
-	name string 
-	color string 
+<span class="n">type</span> <span class="n">Cls1</span> <span class="n">struct</span><span class="p">{}</span>
 
-}
+<span class="n">func</span> <span class="p">(</span><span class="n">c1</span> <span class="p">*</span><span class="n">Cls1</span><span class="p">)</span> <span class="n">Know</span><span class="p">(){</span>
 
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"cls1 is knowing"</span><span class="p">)</span> 
+<span class="p">}</span>
 
-func NewCat(name string) *Cat{
+<span class="n">func</span> <span class="n">Newcls1</span><span class="p">()*</span><span class="n">Cls1</span><span class="p">{</span>
 
-	return &amp;Cat{name:name,}
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">Cls1</span><span class="p">{}</span>
 
-}
+<span class="p">}</span>
 
+<span class="n">func</span> <span class="n">f1</span><span class="p">()</span><span class="n">base</span><span class="p">.</span><span class="n">Class</span><span class="p">{</span>
 
-func NewBlankCat(color string) *Cat{
+	<span class="n">return</span> <span class="n">Newcls1</span><span class="p">()</span>
 
-	return &amp;Cat{color:color,} 
+<span class="p">}</span>
 
-}
+<span class="n">func</span> <span class="n">init</span><span class="p">(){</span>
+	
+	<span class="n">base</span><span class="p">.</span><span class="n">Registermap</span><span class="p">(</span><span class="s2">"cls1"</span><span class="p">,</span><span class="n">f1</span><span class="p">)</span> 
+
+<span class="p">}</span>
 </code></pre></div></div>
 
-<h5 id="2-父子结构体的构造和初始化">2. 父子结构体的构造和初始化</h5>
+<h5 id="clsfactorycls2reggo">clsfactory/cls2/reg.go</h5>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Car struct{
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">cls2</span> 
+<span class="n">import</span> <span class="s2">"clsfactory/base"</span>
+<span class="n">import</span> <span class="s2">"fmt"</span> 
 
-	name string 
-	color string 
+<span class="n">type</span> <span class="n">Cls2</span> <span class="n">struct</span><span class="p">{}</span>
 
-}
+<span class="n">func</span> <span class="p">(</span><span class="n">c2</span> <span class="p">*</span><span class="n">Cls2</span><span class="p">)</span> <span class="n">Know</span><span class="p">(){</span>
 
-type BlankCar struct{
-	Car 
-	price float32
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"cls2 is knowing"</span><span class="p">)</span> 
+<span class="p">}</span>
 
+<span class="n">func</span> <span class="n">Newcls2</span><span class="p">()*</span><span class="n">Cls2</span><span class="p">{</span>
 
-}
+	<span class="n">return</span> <span class="p">&amp;</span><span class="n">Cls2</span><span class="p">{}</span>
 
+<span class="p">}</span>
 
+<span class="n">func</span> <span class="n">f2</span><span class="p">()</span><span class="n">base</span><span class="p">.</span><span class="n">Class</span><span class="p">{</span>
 
-func NewCar(name,color string) *Car{
+	<span class="n">return</span> <span class="n">Newcls2</span><span class="p">()</span>
 
-	return &amp;Car{
-		name:name,
-		color:color,
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">init</span><span class="p">(){</span>
 	
-	}
+	<span class="n">base</span><span class="p">.</span><span class="n">Registermap</span><span class="p">(</span><span class="s2">"cls2"</span><span class="p">,</span><span class="n">f2</span><span class="p">)</span> 
 
-}
-
-
-func NewBlankCar(name string,color string,price float32) *BlankCar{
-
-	return &amp;NewBlankCar{
-		Car:Car{
-			name:name,
-			color:color,
-		
-		},
-		price:price,
-	
-	}
-
-
-}
+<span class="p">}</span>
 </code></pre></div></div>
 
-<h3 id="内嵌结构体">内嵌结构体</h3>
+<h5 id="clsfactorymaingo">clsfactory/main.go</h5>
 
-<h5 id="1-内嵌结构体的初始化">1. 内嵌结构体的初始化</h5>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import "clsfactory/base"
+import _ "clsfactory/cls1"
+import _ "clsfactory/cls2"
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Wheel struct{
-
-	Size int 
-}
-
-type Engine struct{
-
-	Power int 
-	Type string 
-}
-
-
-type Car struct{
-	Wheel
-	Engine 
-}
-
-
-func NewCar(Size int,Power int,Type string) *Car{
-
-
-	return &amp;Car{
-		Wheel:Wheel{
-			Size:Size,
-		
-		},
-		
-		Engine:Engine{
-			Power:Power,
-			Type:Type,
-		},
-	
-	
-	}
-
-
-}
 
 func main(){
 
 
-var car *Car = NewCar(10,80,"1.4T")
-fmt.Println(car) 
-
-} 
-</code></pre></div></div>
-
-<h5 id="2-内嵌结构体的继承">2. 内嵌结构体的继承</h5>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Flying struct{
-
-}
-
-func (f *Flying) Fly(){
-
-	fmt.Println(*f,"is flying") 
-}
-
-
-type Walking struct{}
-
-
-func (w *Walking) Walk(){
-
-	fmt.Println(*w,"is walking") 
-
-}
-
-type Bird struct{
-	Flying
-	Walking 
-
-}
-
-
-func NewBird() *Bird{
-
-	return &amp;Bird{}
-}
-
-
-func t_main(){
-
-	var bird *Bird = NewBird()
-	bird.Fly()
-	bird.Walk() 
-
-}
-</code></pre></div></div>
-
-<h3 id="结构体的json序列化和反序列化">结构体的json序列化和反序列化</h3>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func j_main(){
-
-var car *Car = NewCar(10,80,"1.4T") 
-
-data,_ := json.Marshal(car)
-fmt.Println(string(data))
-
-
-var car1 *Car = new(Car) 
-
-json.Unmarshal(data,car1) 
-fmt.Println(car1) 
+	base.Callmap("cls1")
 
 }
 </code></pre></div></div>
@@ -512,15 +366,10 @@ fmt.Println(car1)
        <ul class="pager">
         
         <li class="previous">
-            <a href="/2019/08/TIDB%E7%9A%84%E5%AE%89%E8%A3%85/" data-toggle="tooltip" data-placement="top" title="TIDB的安装">上一篇：  <span>TIDB的安装</span>
+            <a href="/2019/08/%E7%BB%93%E6%9E%84%E4%BD%93/" data-toggle="tooltip" data-placement="top" title="Go语言结构体（struct）">上一篇：  <span>Go语言结构体（struct）</span>
             </a>
         </li>
         
-        
-        <li class="next">
-            <a href="/2019/09/%E5%8C%85%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/" data-toggle="tooltip" data-placement="top" title="包概念与工厂模式">下一篇：  <span>包概念与工厂模式</span>
-            </a>
-        </li>
         
     </ul>
 </section>
