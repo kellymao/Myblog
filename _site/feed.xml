@@ -5,9 +5,425 @@
     <description>欢迎来到我的个人站~</description>
     <link>http://0.0.0.0:9000/</link>
     <atom:link href="http://0.0.0.0:9000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 02 Sep 2019 11:38:33 +0800</pubDate>
-    <lastBuildDate>Mon, 02 Sep 2019 11:38:33 +0800</lastBuildDate>
+    <pubDate>Tue, 03 Sep 2019 18:52:12 +0800</pubDate>
+    <lastBuildDate>Tue, 03 Sep 2019 18:52:12 +0800</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>Go语言接口（interface）</title>
+        <description>&lt;h3 id=&quot;go语言接口声明定义&quot;&gt;Go语言接口声明（定义）&lt;/h3&gt;
+
+&lt;h3 id=&quot;1-接口被实现的条件&quot;&gt;1. 接口被实现的条件&lt;/h3&gt;
+
+&lt;p&gt;#####（1）接口的方法与实现接口的类型方法格式一致&lt;/p&gt;
+
+&lt;p&gt;#####（2）接口中所有方法均被实现： 实现了接口里面所有的方法才叫实现了接口。只包含部分方法就没有实现这个接口&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 接口的声明
+
+type Writer interface{
+
+	writedata(v interface{})(n int ,err error)
+
+}
+type Reader interface{
+
+	readdata(v interface{})
+
+}
+
+type File struct{}
+
+
+func (f *File) writedata(v interface{})(n int ,err error){
+
+	fmt.Println(&quot;writedata:&quot;, v)
+	return
+
+}
+
+func (f *File) readdata(v interface{}){
+
+	fmt.Println(&quot;readedata:&quot;, v)
+	return             // 函数的裸返回，跟定义的返回值变量名一样，没定义就返回空 
+
+
+	fmt.Println(&quot;end:&quot;)
+}
+
+
+func e1(){
+
+	var write Writer = &amp;amp;File{}
+	fmt.Println(write)
+
+	n,err:=write.writedata(&quot;write a few data&quot;)
+
+	fmt.Println(n,err)
+
+
+	var read Reader = &amp;amp;File{}
+
+	read.readdata(&quot;read a few data&quot;)
+
+}
+
+运行的结果：
+
+&amp;amp;{}
+writedata: write a few data
+0 &amp;lt;nil&amp;gt;
+readedata: read a few data
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;go语言类型与接口的关系&quot;&gt;Go语言类型与接口的关系&lt;/h3&gt;
+
+&lt;p&gt;#####（1）每一个struct 类型结构体可以实现多个接口&lt;/p&gt;
+
+&lt;p&gt;一个类型可以同时实现多个接口，而接口间彼此独立，不知道对方的实现。&lt;/p&gt;
+
+&lt;p&gt;#####（2）多个类型可以实现相同的接口&lt;/p&gt;
+
+&lt;p&gt;一个接口的方法，不一定需要由一个类型完全实现，接口的方法可以通过在类型中嵌入其他类型或者结构体来实现。也就是说，使用者并不关心某个接口的方法是通过一个类型完全实现的，还是通过多个结构嵌入到一个结构体中拼凑起来共同实现的。&lt;/p&gt;
+
+&lt;h5 id=&quot;把-socket-能够写入数据和需要关闭的特性使用接口来描述请参考下面的代码&quot;&gt;把 Socket 能够写入数据和需要关闭的特性使用接口来描述，请参考下面的代码：&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type writer interface{
+
+	writedata([]byte)(n int,err error) 
+}
+
+
+  
+
+
+type closer interface{
+
+	close()(err error) 
+}
+
+type socket struct{} 
+
+
+func (s *socket) writedata(p []byte)(n int,err error) {
+
+	fmt.Println(string(p)) 
+	return 0 , nil 
+
+
+
+
+}
+
+
+func (s *socket) close() error{
+
+	return nil 
+}
+
+
+func usingwriter(write writer){
+
+	write.writedata([]byte(&quot;hello world&quot;))
+
+}
+
+
+func usingcloser(close  closer){
+
+	close.close() 
+}
+
+func main(){
+
+// 实例化socket 
+var i *socket = &amp;amp;socket{}
+
+
+// socket 类型实现了writer 和 closer 两个接口 
+usingwriter(i) 
+usingcloser(i) 
+
+
+}
+
+
+usingWriter() 和 usingCloser() 完全独立，互相不知道对方的存在，也不知道自己使用的接口是 Socket 实现的。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;service-接口定义了两个方法一个是开启服务的方法start一个是输出日志的方法log使用-gameservice-结构体来实现-servicegameservice-自己的结构只能实现-start-方法而-service-接口中的-log-方法已经被一个能输出日志的日志器logger实现了无须再进行-gameservice-封装或者重新实现一遍所以选择将-logger-嵌入到-gameservice-能最大程度地避免代码冗余&quot;&gt;Service 接口定义了两个方法：一个是开启服务的方法（Start()），一个是输出日志的方法（Log()）。使用 GameService 结构体来实现 Service，GameService 自己的结构只能实现 Start() 方法，而 Service 接口中的 Log() 方法已经被一个能输出日志的日志器（Logger）实现了，无须再进行 GameService 封装，或者重新实现一遍。所以，选择将 Logger 嵌入到 GameService 能最大程度地避免代码冗余&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Service interface{
+
+	Start()
+	Log() 
+
+}
+
+type Logger struct{
+
+}
+
+func (l *Logger) Log(){
+
+
+
+}
+
+
+type GameService struct{
+	Logger 
+
+}
+
+func (g *GameService) Start(){
+
+
+}
+
+
+func main(){
+
+var service  Service = &amp;amp;GameService{}
+service.Start()
+service.Log()
+
+}
+
+
+service 就可以使用 Start() 方法和 Log() 方法，其中，Start() 由 GameService 实现，Log() 方法由 Logger 实现。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;go语言类型断言&quot;&gt;Go语言类型断言&lt;/h3&gt;
+
+&lt;h5 id=&quot;go语言中有四种接口相关的类型转换情形&quot;&gt;Go语言中有四种接口相关的类型转换情形：&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个非接口值转换为一个接口类型在这样的转换中此非接口值的类型必须实现了此接口类型&quot;&gt;● 将一个非接口值转换为一个接口类型。在这样的转换中，此非接口值的类型必须实现了此接口类型。&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个接口值转换为另一个接口类型前者接口值的类型实现了后者目标接口类型&quot;&gt;● 将一个接口值转换为另一个接口类型（前者接口值的类型实现了后者目标接口类型）。&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个接口值转换为一个非接口类型此非接口类型必须实现了此接口值的接口类型&quot;&gt;● 将一个接口值转换为一个非接口类型（此非接口类型必须实现了此接口值的接口类型）。&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个接口值转换为另一个接口类型前者接口值的类型可以实现了也可以未实现后者目标接口类型&quot;&gt;● 将一个接口值转换为另一个接口类型（前者接口值的类型可以实现了也可以未实现后者目标接口类型）。&lt;/h5&gt;
+
+&lt;p&gt;本节将介绍后面两种情形。这两种情形的合法性是在运行时刻通过类型断言来验证的。 事实上，类型断言同样也适用于上面列出的第二种情形。&lt;/p&gt;
+
+&lt;h5 id=&quot;断言的语法&quot;&gt;断言的语法&lt;/h5&gt;
+
+&lt;h5 id=&quot;1-断言被用做一个单值表达式-断言成功返回值断言失败会引起恐慌&quot;&gt;1. 断言被用做一个单值表达式 ，断言成功返回值。断言失败会引起恐慌&lt;/h5&gt;
+
+&lt;h5 id=&quot;2-断言返回两个结果的多值表达式断言成功返回值和一个true-的bool类型-断言失败返回零值-nil-接口值-和-flase&quot;&gt;2. 断言返回两个结果的多值表达式，断言成功返回值，和一个true 的bool类型， 断言失败返回零值 nil 接口值 ，和 flase&lt;/h5&gt;
+
+&lt;p&gt;【示例 1】断言类型为非接口类型 : 将一个接口值转换为一个非接口类型&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func main() {
+	var x interface{} = &quot;123&quot;  //声明一个接口类型
+
+	rel,ok := x.(int)          //断言类型为非接口类型 
+	fmt.Println(rel,ok)        // 123, true 
+	
+	
+	rel := x.(int)  
+	fmt.Println(rel)  		   // 123 
+	
+	rel,ok := x.(float32)      //断言类型为非接口类型 
+	fmt.Println(rel,ok)        // 0, false 
+	
+	
+	rel:= x.(float32)          
+	fmt.Println(rel)           //断言失败单值表达式 会产生恐慌 
+
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;【示例 2】断言类型为接口类型：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Write interface{
+
+	write() 
+}
+
+
+
+type Summerywrite struct {
+
+}
+
+func ( s *Summerywrite) write(){} 
+
+
+
+
+func main(){
+
+	var a interface{}  = Summerywrite{}
+
+	var a1 interface{}  = &amp;amp;Summerywrite{}
+
+
+	var b interface{}  = &quot;hello&quot;  // b的动态类型为内置类型string
+
+
+	var c Write = &amp;amp;Summerywrite{}
+
+
+	rel1,ok1 := a.(Write)
+	fmt.Println(rel1,ok1)              // &amp;lt;nil&amp;gt; false
+
+
+	rel2,ok2 := a1.(Write)
+	fmt.Println(rel2,ok2)              //  &amp;amp;{} true
+
+	rel3,ok3 := b.(Write)
+	fmt.Println(rel3,ok3)             // &amp;lt;nil&amp;gt; false
+
+
+	var result interface{}              //先定义类型，在进行断言测试
+	var is_boo bool
+	result,is_boo = c.(interface{})     //c 实现了interface() 和 Write 两个接口
+
+	fmt.Println(result,is_boo)           //  &amp;amp;{} true 
+
+	rel:= b.(Write)                     // 断言失败出现恐慌
+	fmt.Println(rel)                    // panic: interface conversion: string is not main.Write: missing method write
+
+
+
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;断言类型实现接口转换&quot;&gt;断言类型实现接口转换&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var w io.Writer
+w = os.Stdout
+f := w.(*os.File) // 成功: f == os.Stdout
+c := w.(*bytes.Buffer) // 死机：接口保存*os.file，而不是*bytes.buffer
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;1-将接口转换为其他接口&quot;&gt;1. 将接口转换为其他接口&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var obj interface = new(bird)
+f, isFlyer := obj.(Flyer)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;代码中，new(bird) 产生 *bird 类型的 bird 实例，这个实例被保存在 interface{} 类型的 obj 变量中。使用 obj.(Flyer) 类型断言，将 obj 转换为 Flyer 接口。f 为转换成功时的 Flyer 接口类型，isFlyer 表示是否转换成功，类型就是 bool。&lt;/p&gt;
+
+&lt;h5 id=&quot;2-将接口转换为其他类型&quot;&gt;2. 将接口转换为其他类型&lt;/h5&gt;
+
+&lt;p&gt;可以实现将接口转换为普通的指针类型。例如将 Walker 接口转换为 *pig 类型，请参考下面的代码：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;p1 := new(pig)
+var a Walker = p1
+p2 := a.(*pig)
+fmt.Printf(&quot;p1=%p p2=%p&quot;, p1, p2)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;go语言接口的嵌套组合&quot;&gt;Go语言接口的嵌套组合&lt;/h3&gt;
+
+&lt;h5 id=&quot;例一&quot;&gt;例一&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Reader interface{
+
+	Read() 
+
+}
+
+type Writer interface{
+
+	Writer() 
+}
+
+
+type ReadWriter interface{
+	Reader 
+	Writer 
+
+
+}
+
+type File struct{
+
+
+}
+
+func (f *File) Read(){}
+
+func (f *File) Writer(){}
+
+func test(rw ReadWriter){
+
+	rw.Read() 
+	rw.Writer()
+}
+
+test(&amp;amp;File{})
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;例二&quot;&gt;例二&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;包&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Closer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WriteCloser&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Closer&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+
+
+&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;包&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;io&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+
+
+&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;声明一个设备结构&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;device&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;实现&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;方法&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;byte&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;err&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nil&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;实现&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Closer&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;方法&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nil&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;声明写入关闭器&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;并赋予&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的实例&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;wc&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WriteCloser&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;写入数据&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;wc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;关闭设备&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;wc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;声明写入器&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;并赋予&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的新实例&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;writeOnly&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;io&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Writer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;写入数据&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;writeOnly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Tue, 03 Sep 2019 00:00:00 +0800</pubDate>
+        <link>http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E6%8E%A5%E5%8F%A3-interface/</link>
+        <guid isPermaLink="true">http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E6%8E%A5%E5%8F%A3-interface/</guid>
+        
+        <category>GO语言</category>
+        
+        
+      </item>
     
       <item>
         <title>包概念与工厂模式</title>
