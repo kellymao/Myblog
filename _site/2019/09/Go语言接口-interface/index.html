@@ -167,13 +167,13 @@
   </header>
 
   <section class="post">
-    <h3 id="go语言接口声明定义">Go语言接口声明（定义）</h3>
+    <h2 id="go语言接口声明定义">Go语言接口声明（定义）</h2>
 
-<h3 id="1-接口被实现的条件">1. 接口被实现的条件</h3>
+<h2 id="接口被实现的条件">接口被实现的条件</h2>
 
-<p>#####（1）接口的方法与实现接口的类型方法格式一致</p>
+<h5 id="1-接口的方法与实现接口的类型方法格式一致"><strong>1. 接口的方法与实现接口的类型方法格式一致</strong></h5>
 
-<p>#####（2）接口中所有方法均被实现： 实现了接口里面所有的方法才叫实现了接口。只包含部分方法就没有实现这个接口</p>
+<h5 id="2-接口中所有方法均被实现-实现了接口里面所有的方法才叫实现了接口只包含部分方法就没有实现这个接口"><strong>2. 接口中所有方法均被实现： 实现了接口里面所有的方法才叫实现了接口。只包含部分方法就没有实现这个接口</strong></h5>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 接口的声明
 
@@ -232,13 +232,13 @@ writedata: write a few data
 readedata: read a few data
 </code></pre></div></div>
 
-<h3 id="go语言类型与接口的关系">Go语言类型与接口的关系</h3>
+<h2 id="go语言类型与接口的关系">Go语言类型与接口的关系</h2>
 
-<p>#####（1）每一个struct 类型结构体可以实现多个接口</p>
+<h5 id="1-每一个struct-类型结构体可以实现多个接口"><strong>1. 每一个struct 类型结构体可以实现多个接口</strong></h5>
 
 <p>一个类型可以同时实现多个接口，而接口间彼此独立，不知道对方的实现。</p>
 
-<p>#####（2）多个类型可以实现相同的接口</p>
+<h5 id="2-多个类型可以实现相同的接口"><strong>2. 多个类型可以实现相同的接口</strong></h5>
 
 <p>一个接口的方法，不一定需要由一个类型完全实现，接口的方法可以通过在类型中嵌入其他类型或者结构体来实现。也就是说，使用者并不关心某个接口的方法是通过一个类型完全实现的，还是通过多个结构嵌入到一个结构体中拼凑起来共同实现的。</p>
 
@@ -307,7 +307,7 @@ usingcloser(i)
 usingWriter() 和 usingCloser() 完全独立，互相不知道对方的存在，也不知道自己使用的接口是 Socket 实现的。
 </code></pre></div></div>
 
-<h5 id="service-接口定义了两个方法一个是开启服务的方法start一个是输出日志的方法log使用-gameservice-结构体来实现-servicegameservice-自己的结构只能实现-start-方法而-service-接口中的-log-方法已经被一个能输出日志的日志器logger实现了无须再进行-gameservice-封装或者重新实现一遍所以选择将-logger-嵌入到-gameservice-能最大程度地避免代码冗余">Service 接口定义了两个方法：一个是开启服务的方法（Start()），一个是输出日志的方法（Log()）。使用 GameService 结构体来实现 Service，GameService 自己的结构只能实现 Start() 方法，而 Service 接口中的 Log() 方法已经被一个能输出日志的日志器（Logger）实现了，无须再进行 GameService 封装，或者重新实现一遍。所以，选择将 Logger 嵌入到 GameService 能最大程度地避免代码冗余</h5>
+<p>Service 接口定义了两个方法：一个是开启服务的方法（Start()），一个是输出日志的方法（Log()）。使用 GameService 结构体来实现 Service，GameService 自己的结构只能实现 Start() 方法，而 Service 接口中的 Log() 方法已经被一个能输出日志的日志器（Logger）实现了，无须再进行 GameService 封装，或者重新实现一遍。所以，选择将 Logger 嵌入到 GameService 能最大程度地避免代码冗余</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Service interface{
 
@@ -350,21 +350,21 @@ service.Log()
 service 就可以使用 Start() 方法和 Log() 方法，其中，Start() 由 GameService 实现，Log() 方法由 Logger 实现。
 </code></pre></div></div>
 
-<h3 id="go语言类型断言">Go语言类型断言</h3>
+<h2 id="go语言类型断言">Go语言类型断言</h2>
 
-<h5 id="go语言中有四种接口相关的类型转换情形">Go语言中有四种接口相关的类型转换情形：</h5>
-<h5 id="-将一个非接口值转换为一个接口类型在这样的转换中此非接口值的类型必须实现了此接口类型">● 将一个非接口值转换为一个接口类型。在这样的转换中，此非接口值的类型必须实现了此接口类型。</h5>
-<h5 id="-将一个接口值转换为另一个接口类型前者接口值的类型实现了后者目标接口类型">● 将一个接口值转换为另一个接口类型（前者接口值的类型实现了后者目标接口类型）。</h5>
-<h5 id="-将一个接口值转换为一个非接口类型此非接口类型必须实现了此接口值的接口类型">● 将一个接口值转换为一个非接口类型（此非接口类型必须实现了此接口值的接口类型）。</h5>
-<h5 id="-将一个接口值转换为另一个接口类型前者接口值的类型可以实现了也可以未实现后者目标接口类型">● 将一个接口值转换为另一个接口类型（前者接口值的类型可以实现了也可以未实现后者目标接口类型）。</h5>
+<h5 id="go语言中有四种接口相关的类型转换情形"><strong>Go语言中有四种接口相关的类型转换情形：</strong></h5>
+<h5 id="-将一个非接口值转换为一个接口类型在这样的转换中此非接口值的类型必须实现了此接口类型">● <strong>将一个非接口值转换为一个接口类型。在这样的转换中，此非接口值的类型必须实现了此接口类型。</strong></h5>
+<h5 id="-将一个接口值转换为另一个接口类型前者接口值的类型实现了后者目标接口类型">● <strong>将一个接口值转换为另一个接口类型（前者接口值的类型实现了后者目标接口类型）。</strong></h5>
+<h5 id="-将一个接口值转换为一个非接口类型此非接口类型必须实现了此接口值的接口类型">● <strong>将一个接口值转换为一个非接口类型（此非接口类型必须实现了此接口值的接口类型）。</strong></h5>
+<h5 id="-将一个接口值转换为另一个接口类型前者接口值的类型可以实现了也可以未实现后者目标接口类型">● <strong>将一个接口值转换为另一个接口类型（前者接口值的类型可以实现了也可以未实现后者目标接口类型）。</strong></h5>
 
 <p>本节将介绍后面两种情形。这两种情形的合法性是在运行时刻通过类型断言来验证的。 事实上，类型断言同样也适用于上面列出的第二种情形。</p>
 
-<h5 id="断言的语法">断言的语法</h5>
+<h3 id="断言的语法">断言的语法</h3>
 
-<h5 id="1-断言被用做一个单值表达式-断言成功返回值断言失败会引起恐慌">1. 断言被用做一个单值表达式 ，断言成功返回值。断言失败会引起恐慌</h5>
+<h5 id="1-断言被用做一个单值表达式-断言成功返回值断言失败会引起恐慌"><strong>1. 断言被用做一个单值表达式 ，断言成功返回值。断言失败会引起恐慌</strong></h5>
 
-<h5 id="2-断言返回两个结果的多值表达式断言成功返回值和一个true-的bool类型-断言失败返回零值-nil-接口值-和-flase">2. 断言返回两个结果的多值表达式，断言成功返回值，和一个true 的bool类型， 断言失败返回零值 nil 接口值 ，和 flase</h5>
+<h5 id="2-断言返回两个结果的多值表达式断言成功返回值和一个true-的bool类型-断言失败返回零值-nil-接口值-和-flase"><strong>2. 断言返回两个结果的多值表达式，断言成功返回值，和一个true 的bool类型， 断言失败返回零值 nil 接口值 ，和 flase</strong></h5>
 
 <p>【示例 1】断言类型为非接口类型 : 将一个接口值转换为一个非接口类型</p>
 
@@ -454,7 +454,7 @@ f := w.(*os.File) // 成功: f == os.Stdout
 c := w.(*bytes.Buffer) // 死机：接口保存*os.file，而不是*bytes.buffer
 </code></pre></div></div>
 
-<h5 id="1-将接口转换为其他接口">1. 将接口转换为其他接口</h5>
+<h5 id="1-将接口转换为其他接口"><strong>1. 将接口转换为其他接口</strong></h5>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var obj interface = new(bird)
 f, isFlyer := obj.(Flyer)
@@ -462,7 +462,7 @@ f, isFlyer := obj.(Flyer)
 
 <p>代码中，new(bird) 产生 *bird 类型的 bird 实例，这个实例被保存在 interface{} 类型的 obj 变量中。使用 obj.(Flyer) 类型断言，将 obj 转换为 Flyer 接口。f 为转换成功时的 Flyer 接口类型，isFlyer 表示是否转换成功，类型就是 bool。</p>
 
-<h5 id="2-将接口转换为其他类型">2. 将接口转换为其他类型</h5>
+<h5 id="2-将接口转换为其他类型"><strong>2. 将接口转换为其他类型</strong></h5>
 
 <p>可以实现将接口转换为普通的指针类型。例如将 Walker 接口转换为 *pig 类型，请参考下面的代码：</p>
 
@@ -472,7 +472,7 @@ p2 := a.(*pig)
 fmt.Printf("p1=%p p2=%p", p1, p2)
 </code></pre></div></div>
 
-<h3 id="go语言接口的嵌套组合">Go语言接口的嵌套组合</h3>
+<h2 id="go语言接口的嵌套组合">Go语言接口的嵌套组合</h2>
 
 <h5 id="例一">例一</h5>
 
@@ -572,6 +572,294 @@ test(&amp;File{})
 <span class="p">}</span>
 </code></pre></div></div>
 
+<h2 id="go语言空接口类型interface">Go语言空接口类型（interface{}）</h2>
+
+<h5 id="1-将值保存到空接口">1. 将值保存到空接口</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var any interface{}  
+
+any = 1 
+fmt.Println(any) 
+
+
+any = true 
+fmt.Println(any) 
+
+any = false 
+fmt.Println(any) 
+</code></pre></div></div>
+
+<h5 id="2-从空接口获取值">2. 从空接口获取值</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var i interface{} = 1 
+
+var b int 
+b = i              // 触发宕机了，空接口不能直接转换为int
+
+b = i.(int)       // 通过断言进行类型转换
+</code></pre></div></div>
+
+<h2 id="go语言类型分支switch判断空接口中变量的类型">Go语言类型分支（switch判断空接口中变量的类型）</h2>
+
+<p>一个 type-switch 流程控制代码块的语法如下所示：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>switch t := areaIntf.(type) {
+case *Square:
+	fmt.Printf("Type Square %T with value %v\n", t, t)
+case *Circle:
+	fmt.Printf("Type Circle %T with value %v\n", t, t)
+case nil:
+	fmt.Printf("nil value: nothing to check?\n")
+default:
+	fmt.Printf("Unexpected type %T\n", t)
+}
+</code></pre></div></div>
+
+<p>下面的例子将一个 interface{} 类型的参数传给 printType() 函数，通过 switch 判断 v 的类型，然后打印对应类型的提示，代码如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+<span class="n">func</span> <span class="n">printType</span><span class="p">(</span><span class="n">v</span> <span class="n">interface</span><span class="p">{})</span> <span class="p">{</span>
+	<span class="n">switch</span> <span class="n">v</span><span class="p">.(</span><span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="n">int</span><span class="p">:</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">"is int"</span><span class="p">)</span>
+	<span class="k">case</span> <span class="k">string</span><span class="p">:</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">"is string"</span><span class="p">)</span>
+	<span class="k">case</span> <span class="n">bool</span><span class="p">:</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="s2">"is bool"</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">printType</span><span class="p">(</span><span class="m">1024</span><span class="p">)</span>
+	<span class="n">printType</span><span class="p">(</span><span class="s2">"pig"</span><span class="p">)</span>
+	<span class="n">printType</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="go语言排序借助sortinterface接口">Go语言排序（借助sort.Interface接口）</h2>
+
+<h5 id="原理-sortsortv-sortinterface-函数实现排序接受一个sortinterface-的参数"><strong>原理： sort.Sort(v sort.Interface) 函数实现排序,接受一个sort.Interface 的参数</strong></h5>
+
+<h5 id="一个内置的排序算法需要知道三个东西序列的长度表示两个元素比较的结果一种交换两个元素的方式这就是sortinterface-的三个方法"><strong>一个内置的排序算法需要知道三个东西：序列的长度，表示两个元素比较的结果，一种交换两个元素的方式；这就是sort.Interface 的三个方法：</strong></h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">sort</span>
+<span class="n">type</span> <span class="n">Interface</span> <span class="n">interface</span> <span class="p">{</span>
+	<span class="n">Len</span><span class="p">()</span> <span class="n">int</span>            <span class="p">//</span> <span class="err">获取元素数量</span>
+	<span class="n">Less</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="n">int</span><span class="p">)</span> <span class="n">bool</span> <span class="p">//</span> <span class="n">i</span><span class="err">，</span><span class="n">j</span><span class="err">是序列元素的指数。</span>
+	<span class="n">Swap</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="n">int</span><span class="p">)</span>        <span class="p">//</span> <span class="err">交换元素</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="自定义切片-string-的排序方法">自定义切片 []string 的排序方法</h3>
+
+<h3 id="内置的切片排序方法">内置的切片排序方法</h3>
+
+<p>使用 sort 包的 StringSlice 类型就可以更简单快速地进行字符串切片排序 ：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main(){
+	var str sort.StringSlice
+
+	str = sort.StringSlice{
+		"apple","banana","taozi","xigua","why","cm",
+	}
+
+
+	sort.Sort(str)
+
+	fmt.Println(str)  // [apple banana cm taozi why xigua]
+
+}	
+</code></pre></div></div>
+
+<p>使用 sort 包的sort.IntSlice 类型进行整型切片的排序</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func sort_int(){
+
+	var i sort.IntSlice  = sort.IntSlice{6,8,9,3,2,7}
+
+	sort.Sort(i)
+
+	fmt.Println(i) // [2 3 6 7 8 9]
+
+
+}
+</code></pre></div></div>
+
+<p>使用 sort.Strings 函数直接对字符串切片进行排序</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func sort_str1(){
+
+	var str []string = []string{"apple","banana","taozi","xigua","why","cm",}
+
+	sort.Strings(str)
+
+	fmt.Println(str)  // [apple banana cm taozi why xigua]
+
+
+}
+</code></pre></div></div>
+
+<p>使用 sort.Ints 函数直接对字符串切片进行排序</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func sort_int1(){
+
+
+	var i []int = []int{6,8,9,3,2,7}
+
+	sort.Ints(i)
+
+	fmt.Println(i)
+
+}
+</code></pre></div></div>
+
+<p>Go语言中的 sort 包中定义了一些常见类型的排序方法，如下表所示。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>sort 包中内建的类型排序接口：</th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>字符串（String）：</td>
+      <td>StringSlice</td>
+      <td>sort.Strings(a [] string)</td>
+    </tr>
+    <tr>
+      <td>整型（int）：</td>
+      <td>IntSlice</td>
+      <td>sort.Ints(a []int)</td>
+    </tr>
+    <tr>
+      <td>双精度浮点（float64）：</td>
+      <td>Float64Slice</td>
+      <td>sort.Float64s(a []float64)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>编程中经常用到的 int32、int64、float32、bool 类型并没有由 sort 包实现，使用时依然需要开发者自己编写。</p>
+
+<h3 id="自定义结构体的排序方法">自定义结构体的排序方法</h3>
+
+<h3 id="内置的sortslice-进行结构体排-使用sortslice进行切片元素排序">内置的sort.Slice 进行结构体排， 使用sort.Slice进行切片元素排序</h3>
+
+<p>sort.Slice() 函数的定义如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func Slice(slice interface{}, less func(i, j int) bool)
+</code></pre></div></div>
+
+<p>将一批英雄名单使用结构体定义，英雄名单的结构体中定义了英雄的名字和分类。排序时要求按照英雄的分类进行排序，相同分类的情况下按名字进行排序，详细代码实现过程如下。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func sort_hero(){
+
+	type HeroKind int
+	const (
+		None = iota
+		Tank
+		Assassin
+		Mage
+	)
+
+
+	type Hero struct{
+		name string
+		kind HeroKind
+
+
+	}
+
+	var hero_se []*Hero = []*Hero{
+
+		&amp;Hero{"张飞",Mage},
+		&amp;Hero{"吕布",Assassin},
+		&amp;Hero{"关于",Tank},
+		&amp;Hero{"曹操",Assassin},
+		&amp;Hero{"张辽",Mage},
+		&amp;Hero{"孙权",Assassin},
+		&amp;Hero{"周瑜",Tank},
+
+
+
+
+	}
+
+	sort.Slice(hero_se,func(i, j int)bool{
+
+		return  hero_se[i].kind &gt;  hero_se[j].kind
+
+
+	})
+
+	for index,v := range hero_se{
+
+		fmt.Println(index, *v )
+
+	}
+
+
+
+
+
+}
+
+	
+运行的结果：
+0 {张飞 3}
+1 {张辽 3}
+2 {吕布 2}
+3 {曹操 2}
+4 {孙权 2}
+5 {关于 1}
+6 {周瑜 1}
+</code></pre></div></div>
+
+<h2 id="go语言error接口">Go语言error接口：</h2>
+
+<p>error 类型，而且没有解释它究竟是什么。实际上它就是 interface 类型，这个类型有一个返回错误信息的单一方法：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type error interface {
+	Error() string
+}
+</code></pre></div></div>
+
+<p>创建一个 error 的方法</p>
+
+<h5 id="1-调用-errorsnew-函数"><strong>1. 调用 errors.New 函数</strong></h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>errors.New("this is a error") 
+</code></pre></div></div>
+
+<h5 id="2-调用-fmterrorf它还会处理字符串格式化"><strong>2. 调用 fmt.Errorf，它还会处理字符串格式化。</strong></h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fmt.Errorf("this is a error %d %s" , a, err) 
+</code></pre></div></div>
+
+<h2 id="go语言writer和reader接口简述">Go语言Writer和Reader接口简述</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Writer interface {
+	Write(p []byte) (n int, err error)
+}
+</code></pre></div></div>
+
+<p>上述代码中展示了 io.Writer 接口的声明。这个接口声明了唯一一个方法 Write，这个方法接受一个 byte 切片，并返回两个值。第一个值是写入的字节数，第二个值是 error 错误值。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+</code></pre></div></div>
+
+<p>上述代码中的 io.Reader 接口声明了一个方法 Read，这个方法接受一个 byte 切片，并返回两个值。第一个值是读入的字节数，第二个值是 error 错误值。</p>
+
+
 
   </section>
 </article>
@@ -644,6 +932,11 @@ test(&amp;File{})
             </a>
         </li>
         
+        
+        <li class="next">
+            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80%E5%8F%8D%E5%B0%84-reflection-%E7%AE%80%E8%BF%B0/" data-toggle="tooltip" data-placement="top" title="Go语言反射（reflection）简述">下一篇：  <span>Go语言反射（reflection）简述</span>
+            </a>
+        </li>
         
     </ul>
 </section>

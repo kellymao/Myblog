@@ -5,19 +5,570 @@
     <description>欢迎来到我的个人站~</description>
     <link>http://0.0.0.0:9000/</link>
     <atom:link href="http://0.0.0.0:9000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 03 Sep 2019 18:52:12 +0800</pubDate>
-    <lastBuildDate>Tue, 03 Sep 2019 18:52:12 +0800</lastBuildDate>
+    <pubDate>Fri, 06 Sep 2019 13:21:24 +0800</pubDate>
+    <lastBuildDate>Fri, 06 Sep 2019 13:21:24 +0800</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
     
       <item>
+        <title>Go语言反射（reflection）简述</title>
+        <description>&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;反射的基本概念&quot;&gt;反射的基本概念&lt;/h2&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Go语言中的反射与其他语言有比较大的不同。首先我们要理解两个基本概念 Type 和 Value，它们也是 Go语言包中 reflect 空间里最重要的两个类型。我们先看一下下面的定义：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type MyReader struct {
+	Name string
+}
+func (r MyReader)Read(p []byte) (n int, err error) {
+	// 实现自己的Read方法
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;因为 MyReader 类型实现了 io.Reader 接口的所有方法（其实就是一个 Read() 函数），所以 MyReader 实现了接口 io.Reader。我们可以按如下方式来进行 MyReader 的实例化和赋值：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var reader io.Reader
+reader = &amp;amp;MyReader{&quot;a.txt&quot;}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;现在我们可以再来解释一下什么是 Type，什么是 Value。&lt;/p&gt;
+
+&lt;p&gt;对所有接口进行反射，都可以得到一个包含 Type 和 Value 的信息结构。比如我们对上例的 reader 进行反射，也将得到一个 Type 和 Value，Type 为 io.Reader，Value 为 MyReader{“a.txt”}。顾名思义，Type 主要表达的是被反射的这个变量本身的类型信息，而 Value 则为该变量实例本身的信息。&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;反射规则浅析&quot;&gt;反射规则浅析&lt;/h2&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;前面讲解了 Value 和 Type 的基本概念，本节重点讲解反射对象 Value、Type 和类型实例之间的相互转化。实例、Value、Type 三者之间的转换关系如下图所示。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://c.biancheng.net/uploads/allimg/190813/4-1ZQ31336163P.gif&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;反射-api-的分类总结如下&quot;&gt;&lt;strong&gt;反射 API 的分类总结如下:&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;1-通过实例获取-value-对象直接使用-reflectvalueof-函数&quot;&gt;&lt;strong&gt;1. 通过实例获取 Value 对象，直接使用 reflect.ValueOf() 函数&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;2-通过实例获取反射对象的-type直接使用-reflecttypeof-函数&quot;&gt;&lt;strong&gt;2. 通过实例获取反射对象的 Type，直接使用 reflect.TypeOf() 函数&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;3-从-value-获取反射对象的-type可以直接调用-valuetype方法因为-value-内部存放着到-type-类型的指针&quot;&gt;&lt;strong&gt;3. 从 Value 获取反射对象的 Type，可以直接调用 Value.Type()方法，因为 Value 内部存放着到 Type 类型的指针&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;4-value-到实例的转换value-本身就包含类型和值信息reflect-提供了丰富的方法来实现从-value-到实例的转换&quot;&gt;&lt;strong&gt;4. Value 到实例的转换，Value 本身就包含类型和值信息，reflect 提供了丰富的方法来实现从 Value 到实例的转换&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;//该方法最通用，用来将 Value 转换为空接口，该空接口内部存放具体类型实例
+
+func (v Value) Interface() （i interface{})
+
+//Value 自身也提供丰富的方法，直接将 Value 转换为简单类型实例，如果类型不匹配，则直接引起 panic
+
+func (v Value) Bool () bool
+func (v Value) Float() float64
+func (v Value) Int() int64
+func (v Value) Uint() uint64
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;5-从一个指针类型的-value-获得值类型-value-直接调用-elem-方法&quot;&gt;&lt;strong&gt;5. 从一个指针类型的 Value 获得值类型 Value， 直接调用 Elem() 方法&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;6-从一个指针类型的-type-获得值类型-type-也是直接调用-elem-方法&quot;&gt;&lt;strong&gt;6. 从一个指针类型的 Type 获得值类型 Type ，也是直接调用 Elem() 方法&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;7-判断value-值的可修改性-canset-方法修改value的值--setx-value-方法&quot;&gt;&lt;strong&gt;7. 判断Value 值的可修改性 CanSet() 方法，修改value的值  Set(x Value) 方法&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;理解反射的类型type与种类kind&quot;&gt;理解反射的类型（Type）与种类（Kind）&lt;/h2&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;1-反射种类kind的定义&quot;&gt;1) 反射种类（Kind）的定义&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;种类（Kind）指的是对象归属的品种，在 reflect 包中有如下定义：
+
+type Kind uint
+const (
+	Invalid Kind = iota  // 非法类型
+	Bool                 // 布尔型
+	Int                  // 有符号整型
+	Int8                 // 有符号8位整型
+	Int16                // 有符号16位整型
+	Int32                // 有符号32位整型
+	Int64                // 有符号64位整型
+	Uint                 // 无符号整型
+	Uint8                // 无符号8位整型
+	Uint16               // 无符号16位整型
+	Uint32               // 无符号32位整型
+	Uint64               // 无符号64位整型
+	Uintptr              // 指针
+	Float32              // 单精度浮点数
+	Float64              // 双精度浮点数
+	Complex64            // 64位复数类型
+	Complex128           // 128位复数类型
+	Array                // 数组
+	Chan                 // 通道
+	Func                 // 函数
+	Interface            // 接口
+	Map                  // 映射
+	Ptr                  // 指针
+	Slice                // 切片
+	String               // 字符串
+	Struct               // 结构体
+	UnsafePointer        // 底层指针
+)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;2-类型type的定义&quot;&gt;2) 类型（Type）的定义&lt;/h3&gt;
+
+&lt;p&gt;Go 程序中的类型（Type）指的是系统原生数据类型，如 int、string、bool、float32 等类型，以及使用 type 关键字定义的类型，这些类型的名称就是其类型本身的名称。例如使用 type A struct{} 定义结构体时，A 就是 struct{} 的类型。&lt;/p&gt;
+
+&lt;h2 id=&quot;go语言通过反射获取-type-的相关方法&quot;&gt;Go语言通过反射获取 Type 的相关方法&lt;/h2&gt;
+
+&lt;h3 id=&quot;基本的方法&quot;&gt;基本的方法：&lt;/h3&gt;
+
+&lt;p&gt;t_ptr := reflect.TypeOf(&amp;amp;a)  获取反射对象的 Type&lt;/p&gt;
+
+&lt;p&gt;t := t_ptr.Elem() 从指针获取值 ，得到reflect.Type 对象&lt;/p&gt;
+
+&lt;p&gt;t.Name()  返回的是类型&lt;/p&gt;
+
+&lt;p&gt;t.Kind()  返回是种类，const定义的常量&lt;/p&gt;
+
+&lt;p&gt;t.Kind() == reflect.Float64  可以直接进行比较，结果为true 或者 false的布尔值&lt;/p&gt;
+
+&lt;p&gt;t.String() 跟直接fmt.Println(t) 结果是一样的&lt;/p&gt;
+
+&lt;p&gt;t.NumField() 返回字段的个数&lt;/p&gt;
+
+&lt;p&gt;t.Field(i) 返回某一个字段的 StructField 结构&lt;/p&gt;
+
+&lt;p&gt;fieldType := t.Field(i) ; fieldType.Name, fieldType.Tag 返回某一个字段的名字 和 tag信息&lt;/p&gt;
+
+&lt;p&gt;fieldType := t.Field(i) ; fieldType.Tag.Get(“json”)  从tag中获取特定的tag信息&lt;/p&gt;
+
+&lt;p&gt;t_ptr.NumMethod() 返回方法的数量 （此处要注意：结构体的方法使用指针定义的，所以用指针来获取）&lt;/p&gt;
+
+&lt;p&gt;t_ptr.Method(i) 返回某一个方法的 reflect.Method , 是string类型&lt;/p&gt;
+
+&lt;p&gt;method_name := t_ptr.Method(i) ; method_name.Name  返回某一个方法的名字&lt;/p&gt;
+
+&lt;h3 id=&quot;获取结构体的成员的方法&quot;&gt;获取结构体的成员的方法&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;方法&lt;/th&gt;
+      &lt;th&gt;说明&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Field(i int) StructField&lt;/td&gt;
+      &lt;td&gt;根据索引，返回索引对应的结构体字段的信息。当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NumField() int&lt;/td&gt;
+      &lt;td&gt;返回结构体成员字段数量。当类型不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;FieldByName(name string) (StructField, bool)&lt;/td&gt;
+      &lt;td&gt;根据给定字符串返回字符串对应的结构体字段的信息。没有找到时 bool 返回 false，当类型不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;FieldByIndex(index []int) StructField&lt;/td&gt;
+      &lt;td&gt;多层成员访问时，根据 []int 提供的每个结构体的字段索引，返回字段的信息。没有找到时返回零值。当类型不是结构体或索引超界时 发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;FieldByNameFunc( match func(string) bool) (StructField,bool)&lt;/td&gt;
+      &lt;td&gt;根据匹配函数匹配需要的字段。当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;获取结构体标签struct-tag的方法&quot;&gt;获取结构体标签（Struct Tag）的方法：&lt;/h3&gt;
+
+&lt;p&gt;使用 StructField 中 Tag 的 Get() 方法&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;typeOfCat := reflect.TypeOf(cat{})
+if catType, ok := typeOfCat.FieldByName(&quot;Type&quot;); ok {
+    fmt.Println(catType.Tag.Get(&quot;json&quot;))
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言通过反射获取-value-的相关方法&quot;&gt;Go语言通过反射获取 Value 的相关方法&lt;/h2&gt;
+
+&lt;h3 id=&quot;基本的方法-1&quot;&gt;基本的方法：&lt;/h3&gt;
+
+&lt;p&gt;v_ptr := reflect.ValueOf(&amp;amp;x) 返回一个Value 值类型&lt;/p&gt;
+
+&lt;p&gt;v := v_ptr.Elem() 从指针获取值 , 返回一个reflect.Value对象&lt;/p&gt;
+
+&lt;p&gt;v.Kind()  返回const定义的常量&lt;/p&gt;
+
+&lt;p&gt;v.Type()  获取反射对象的 Type&lt;/p&gt;
+
+&lt;p&gt;v.Kind() == reflect.Float64  可以直接进行比较，结果为true 或者 false的布尔值&lt;/p&gt;
+
+&lt;p&gt;v.Field(i)  返回一个Value对象&lt;/p&gt;
+
+&lt;p&gt;v.NumField() int	返回结构体成员字段数量&lt;/p&gt;
+
+&lt;p&gt;v.NumMethod()  返回方法的数量&lt;/p&gt;
+
+&lt;p&gt;v_ptr.Method(i)   返回一个reflect.Value对象&lt;/p&gt;
+
+&lt;p&gt;me := v_ptr.Method(i) ; me.Type()  返回一个reflect.Type 类型 ，拥有上面介绍的type的所有方法&lt;/p&gt;
+
+&lt;p&gt;me := v_ptr.Method(0); v_ptr.Method(0).Call()&lt;/p&gt;
+
+&lt;h3 id=&quot;从反射值对象获取被包装的值&quot;&gt;从反射值对象获取被包装的值&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;方法名&lt;/th&gt;
+      &lt;th&gt;说  明&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Interface() interface {}&lt;/td&gt;
+      &lt;td&gt;将值以 interface{} 类型返回，可以通过类型断言转换为指定类型&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Int() int64&lt;/td&gt;
+      &lt;td&gt;将值以 int 类型返回，所有有符号整型均可以此方式返回&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Uint() uint64&lt;/td&gt;
+      &lt;td&gt;将值以 uint 类型返回，所有无符号整型均可以此方式返回&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Float() float64&lt;/td&gt;
+      &lt;td&gt;将值以双精度（float64）类型返回，所有浮点数（float32、float64）均可以此方式返回&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Bool() bool&lt;/td&gt;
+      &lt;td&gt;将值以 bool 类型返回&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Bytes() []bytes&lt;/td&gt;
+      &lt;td&gt;将值以字节数组 []bytes 类型返回&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;String() string&lt;/td&gt;
+      &lt;td&gt;将值以字符串类型返回&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&quot;反射访问结构体成员的值&quot;&gt;反射访问结构体成员的值&lt;/h3&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;方  法&lt;/th&gt;
+      &lt;th&gt;备  注&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Field(i int) Value&lt;/td&gt;
+      &lt;td&gt;根据索引，返回索引对应的结构体成员字段的反射值对象。当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NumField() int&lt;/td&gt;
+      &lt;td&gt;返回结构体成员字段数量。当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;FieldByName(name string) Value&lt;/td&gt;
+      &lt;td&gt;根据给定字符串返回字符串对应的结构体字段。没有找到时返回零值，当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;FieldByIndex(index []int) Value&lt;/td&gt;
+      &lt;td&gt;多层成员访问时，根据 []int 提供的每个结构体的字段索引，返回字段的值。 没有找到时返回零值，当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;FieldByNameFunc(match func(string) bool) Value&lt;/td&gt;
+      &lt;td&gt;根据匹配函数匹配需要的字段。找到时返回零值，当值不是结构体或索引超界时发生宕机&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;go语言通过反射修改变量的值&quot;&gt;GO语言通过反射修改变量的值&lt;/h2&gt;
+
+&lt;p&gt;修改普通变量值得例子：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;reflect&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;声明整型变量&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;并赋初值&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;1024&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;获取变量&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的反射值对象&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的地址&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;valueOfA&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ValueOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;取出&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;地址的元素&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的值&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;valueOfA&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;valueOfA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Elem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;修改&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的值为&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;valueOfA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SetInt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;打印&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的值&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;valueOfA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;修改结构体值得例子：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;reflect&quot;&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dog&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+			&lt;span class=&quot;n&quot;&gt;LegCount&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;获取&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dog&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;实例地址的反射值对象&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;valueOfDog&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ValueOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{})&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;取出&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dog&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;实例地址的元素&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;valueOfDog&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;valueOfDog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Elem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;获取&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legCount&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;字段的值&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;vLegCount&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;valueOfDog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FieldByName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;LegCount&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;尝试设置&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;legCount&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的值&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;这里会发生崩溃&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;vLegCount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SetInt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vLegCount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言通过反射调用函数&quot;&gt;Go语言通过反射调用函数&lt;/h2&gt;
+
+&lt;p&gt;如果反射值对象（reflect.Value）中值的类型为函数时，可以通过 reflect.Value 调用该函数。使用反射调用函数时，需要将参数使用反射值对象的切片 []reflect.Value 构造后传入 Call() 方法中，调用完成时，函数的返回值通过 []reflect.Value 返回。&lt;/p&gt;
+
+&lt;p&gt;下面的代码声明一个加法函数，传入两个整型值，返回两个整型值的和。将函数保存到反射值对象（reflect.Value）中，然后将两个整型值构造为反射值对象的切片（[]reflect.Value），使用 Call() 方法进行调用。&lt;/p&gt;
+
+&lt;p&gt;反射调用函数：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;reflect&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;普通函数&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;将函数包装为反射值对象&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;funcValue&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ValueOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;构造函数参数&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;传入两个整型值&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;paramList&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ValueOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reflect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ValueOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;反射调用函数&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;retList&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;funcValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;paramList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;获取第一个返回值&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;取整数值&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;retList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;代码说明如下：&lt;/p&gt;
+
+&lt;p&gt;第 9～12 行，定义一个普通的加法函数。&lt;/p&gt;
+
+&lt;p&gt;第 17 行，将 add 函数包装为反射值对象。&lt;/p&gt;
+
+&lt;p&gt;第 20 行，将 10 和 20 两个整型值使用 reflect.ValueOf 包装为 reflect.Value，再将反射值对象的切片 []reflect.Value 作为函数的参数。&lt;/p&gt;
+
+&lt;p&gt;第 23 行，使用 funcValue 函数值对象的 Call() 方法，传入参数列表 paramList 调用 add() 函数。&lt;/p&gt;
+
+&lt;p&gt;第 26 行，调用成功后，通过 retList[0] 取返回值的第一个参数，使用 Int 取返回值的整数值。&lt;/p&gt;
+
+&lt;p&gt;提示&lt;/p&gt;
+
+&lt;p&gt;反射调用函数的过程需要构造大量的 reflect.Value 和中间变量，对函数参数值进行逐一检查，还需要将调用参数复制到调用函数的参数内存中。调用完毕后，还需要将返回值转换为 reflect.Value，用户还需要从中取出调用值。因此，反射调用函数的性能问题尤为突出，不建议大量使用反射函数调用。&lt;/p&gt;
+
+&lt;h2 id=&quot;一个完整的例子&quot;&gt;一个完整的例子：&lt;/h2&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Stu struct{
+
+
+	Name string `json:&quot;stu_name&quot;`
+	Age int
+}
+
+func (s *Stu) Printstu() {
+
+	fmt.Println(&quot;xxxxx&quot;,s)
+}
+
+
+func (s *Stu) Printage(a int, b int ) int {
+
+	fmt.Println(&quot;xxxxx &quot;,s)
+	fmt.Println(&quot;result is &quot;, a+b)
+
+	return a+b
+}
+
+func test_reflect(){
+
+
+
+
+	var stu *Stu = &amp;amp;Stu{&quot;zhangsan&quot;,10,}
+	stu.Printstu()
+
+	t_ptr := reflect.TypeOf(stu)
+
+	t:=t_ptr.Elem()
+
+	fmt.Println(t)
+	fmt.Printf(&quot;t Name() is %v&quot;,t.Name())
+	fmt.Println()
+	fmt.Printf(&quot;t Kind() is %v\n&quot;,t.Kind())
+
+	fmt.Printf(&quot;t String() is %v&quot;,t.String())
+	fmt.Println()
+	fmt.Printf(&quot;t NumField() is %v&quot;,t.NumField())
+	fmt.Println()
+	fmt.Printf(&quot;t_ptr NumMethod() is %v \n&quot;,t_ptr.NumMethod())
+
+
+	fmt.Printf(&quot;t_ptr Method(0) is %T %v \n &quot;,t_ptr.Method(0),t_ptr.Method(0))
+
+	fmt.Printf(&quot;t_ptr Method(0).Name is %v \n &quot;,t_ptr.Method(0).Name)  //Printstu
+
+	fmt.Println()
+	fmt.Printf(&quot;t Field(1) is %T %v&quot;,t.Field(0),t.Field(0))
+	fmt.Println()
+	fmt.Printf(&quot;t Field(1).Name is %v&quot;,t.Field(0).Name)
+	fmt.Println()
+	fmt.Printf(&quot;t Field(1).Tag is %s&quot;,t.Field(0).Tag)
+	fmt.Println()
+
+
+	fmt.Printf(&quot;t Field(1).Tag.Get('json') is %s \n &quot;,t.Field(0).Tag.Get(&quot;json&quot;))
+
+	s,ok:=t.FieldByName(&quot;Name&quot;)
+	if ok {
+
+		fmt.Println(s.Name )
+		fmt.Println(s.Tag )
+	}
+
+
+	v_ptr := reflect.ValueOf(stu)
+
+	v:=v_ptr.Elem()
+
+	fmt.Println(v)
+
+	fmt.Println()
+	fmt.Printf(&quot;v Type() is %T %v \n&quot;,v.Type(),v.Type())
+
+	fmt.Printf(&quot;v Type().Field(0) is %T %v %v\n&quot;,v.Type().Field(0),v.Type().Field(0),v.Type().Field(0).Name)
+
+	fmt.Printf(&quot;v Kind() is %v&quot;,v.Kind())
+	fmt.Println()
+	fmt.Printf(&quot;v NumField() is %v&quot;,v.NumField())
+	fmt.Println()
+	fmt.Printf(&quot;v_ptr NumMethod() is %v \n &quot;,v_ptr.NumMethod())
+
+	fmt.Printf(&quot;v_ptr Method(0) is %T %v \n&quot;,v_ptr.Method(0),v_ptr.Method(0))
+
+
+
+	fmt.Printf(&quot;v_ptr Method(0).Type() is %T %v \n&quot;,v_ptr.Method(0).Type(),v_ptr.Method(0))
+
+	fmt.Printf(&quot;v_ptr Method(0).Type().Name() String() is %v %v \n&quot;,v_ptr.Method(0).Type().Name(),v_ptr.Method(0).Type().String())
+
+
+
+	var paramList0  []reflect.Value   // 没有值得情况
+
+	retList0 :=v_ptr.Method(1).Call(paramList0)
+	fmt.Println(retList0)
+
+	paramList1 := []reflect.Value{reflect.ValueOf(10),reflect.ValueOf(20)}  // 传值的情况
+
+	retList1  := v_ptr.Method(0).Call(paramList1)
+
+	fmt.Println(retList1)
+
+	fmt.Println(retList1[0].Int())  // 获取第一个返回值, 取整数值
+
+	fmt.Println()
+	fmt.Printf(&quot;v Field(1) is %T %v&quot;,v.Field(0),v.Field(0))
+	fmt.Println()
+	fmt.Printf(&quot;v Field(1).CanSet is %v&quot;,v.Field(0).CanSet())
+	fmt.Println()
+	fmt.Printf(&quot;v Field(1).Interface is %s&quot;,v.Field(0).Interface())
+	fmt.Println()
+
+	fmt.Printf(&quot;v FieldByName('Name').Interface is %T %s \n&quot;,v.FieldByName(&quot;Name&quot;),v.FieldByName(&quot;Name&quot;).Interface())
+
+
+
+
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;执行的结果：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;main.Stu
+t Name() is Stu
+t Kind() is struct
+t String() is main.Stu
+t NumField() is 2
+t_ptr NumMethod() is 2 
+t_ptr Method(0) is reflect.Method {Printage  func(*main.Stu, int, int) int &amp;lt;func(*main.Stu, int, int) int Value&amp;gt; 0} 
+ t_ptr Method(0).Name is Printage 
+ 
+t Field(1) is reflect.StructField {Name  string json:&quot;stu_name&quot; 0 [0] false}
+t Field(1).Name is Name
+t Field(1).Tag is json:&quot;stu_name&quot;
+t Field(1).Tag.Get('json') is stu_name 
+ Name
+json:&quot;stu_name&quot;
+{zhangsan 10}
+
+v Type() is *reflect.rtype main.Stu 
+v Type().Field(0) is reflect.StructField {Name  string json:&quot;stu_name&quot; 0 [0] false} Name
+v Kind() is struct
+v NumField() is 2
+v_ptr NumMethod() is 2 
+ v_ptr Method(0) is reflect.Value 0x49d570 
+v_ptr Method(0).Type() is *reflect.rtype 0x49d570 
+v_ptr Method(0).Type().Name() String() is  func(int, int) int 
+xxxxx &amp;amp;{zhangsan 10}
+[]
+xxxxx  &amp;amp;{zhangsan 10}
+result is  30
+[&amp;lt;int Value&amp;gt;]
+30
+
+v Field(1) is reflect.Value zhangsan
+v Field(1).CanSet is true
+v Field(1).Interface is zhangsan
+v FieldByName('Name').Interface is reflect.Value zhangsan 	
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Thu, 05 Sep 2019 00:00:00 +0800</pubDate>
+        <link>http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E5%8F%8D%E5%B0%84-reflection-%E7%AE%80%E8%BF%B0/</link>
+        <guid isPermaLink="true">http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E5%8F%8D%E5%B0%84-reflection-%E7%AE%80%E8%BF%B0/</guid>
+        
+        <category>GO语言</category>
+        
+        
+      </item>
+    
+      <item>
         <title>Go语言接口（interface）</title>
-        <description>&lt;h3 id=&quot;go语言接口声明定义&quot;&gt;Go语言接口声明（定义）&lt;/h3&gt;
+        <description>&lt;h2 id=&quot;go语言接口声明定义&quot;&gt;Go语言接口声明（定义）&lt;/h2&gt;
 
-&lt;h3 id=&quot;1-接口被实现的条件&quot;&gt;1. 接口被实现的条件&lt;/h3&gt;
+&lt;h2 id=&quot;接口被实现的条件&quot;&gt;接口被实现的条件&lt;/h2&gt;
 
-&lt;p&gt;#####（1）接口的方法与实现接口的类型方法格式一致&lt;/p&gt;
+&lt;h5 id=&quot;1-接口的方法与实现接口的类型方法格式一致&quot;&gt;&lt;strong&gt;1. 接口的方法与实现接口的类型方法格式一致&lt;/strong&gt;&lt;/h5&gt;
 
-&lt;p&gt;#####（2）接口中所有方法均被实现： 实现了接口里面所有的方法才叫实现了接口。只包含部分方法就没有实现这个接口&lt;/p&gt;
+&lt;h5 id=&quot;2-接口中所有方法均被实现-实现了接口里面所有的方法才叫实现了接口只包含部分方法就没有实现这个接口&quot;&gt;&lt;strong&gt;2. 接口中所有方法均被实现： 实现了接口里面所有的方法才叫实现了接口。只包含部分方法就没有实现这个接口&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// 接口的声明
 
@@ -76,13 +627,13 @@ writedata: write a few data
 readedata: read a few data
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h3 id=&quot;go语言类型与接口的关系&quot;&gt;Go语言类型与接口的关系&lt;/h3&gt;
+&lt;h2 id=&quot;go语言类型与接口的关系&quot;&gt;Go语言类型与接口的关系&lt;/h2&gt;
 
-&lt;p&gt;#####（1）每一个struct 类型结构体可以实现多个接口&lt;/p&gt;
+&lt;h5 id=&quot;1-每一个struct-类型结构体可以实现多个接口&quot;&gt;&lt;strong&gt;1. 每一个struct 类型结构体可以实现多个接口&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;p&gt;一个类型可以同时实现多个接口，而接口间彼此独立，不知道对方的实现。&lt;/p&gt;
 
-&lt;p&gt;#####（2）多个类型可以实现相同的接口&lt;/p&gt;
+&lt;h5 id=&quot;2-多个类型可以实现相同的接口&quot;&gt;&lt;strong&gt;2. 多个类型可以实现相同的接口&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;p&gt;一个接口的方法，不一定需要由一个类型完全实现，接口的方法可以通过在类型中嵌入其他类型或者结构体来实现。也就是说，使用者并不关心某个接口的方法是通过一个类型完全实现的，还是通过多个结构嵌入到一个结构体中拼凑起来共同实现的。&lt;/p&gt;
 
@@ -151,7 +702,7 @@ usingcloser(i)
 usingWriter() 和 usingCloser() 完全独立，互相不知道对方的存在，也不知道自己使用的接口是 Socket 实现的。
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h5 id=&quot;service-接口定义了两个方法一个是开启服务的方法start一个是输出日志的方法log使用-gameservice-结构体来实现-servicegameservice-自己的结构只能实现-start-方法而-service-接口中的-log-方法已经被一个能输出日志的日志器logger实现了无须再进行-gameservice-封装或者重新实现一遍所以选择将-logger-嵌入到-gameservice-能最大程度地避免代码冗余&quot;&gt;Service 接口定义了两个方法：一个是开启服务的方法（Start()），一个是输出日志的方法（Log()）。使用 GameService 结构体来实现 Service，GameService 自己的结构只能实现 Start() 方法，而 Service 接口中的 Log() 方法已经被一个能输出日志的日志器（Logger）实现了，无须再进行 GameService 封装，或者重新实现一遍。所以，选择将 Logger 嵌入到 GameService 能最大程度地避免代码冗余&lt;/h5&gt;
+&lt;p&gt;Service 接口定义了两个方法：一个是开启服务的方法（Start()），一个是输出日志的方法（Log()）。使用 GameService 结构体来实现 Service，GameService 自己的结构只能实现 Start() 方法，而 Service 接口中的 Log() 方法已经被一个能输出日志的日志器（Logger）实现了，无须再进行 GameService 封装，或者重新实现一遍。所以，选择将 Logger 嵌入到 GameService 能最大程度地避免代码冗余&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Service interface{
 
@@ -194,21 +745,21 @@ service.Log()
 service 就可以使用 Start() 方法和 Log() 方法，其中，Start() 由 GameService 实现，Log() 方法由 Logger 实现。
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h3 id=&quot;go语言类型断言&quot;&gt;Go语言类型断言&lt;/h3&gt;
+&lt;h2 id=&quot;go语言类型断言&quot;&gt;Go语言类型断言&lt;/h2&gt;
 
-&lt;h5 id=&quot;go语言中有四种接口相关的类型转换情形&quot;&gt;Go语言中有四种接口相关的类型转换情形：&lt;/h5&gt;
-&lt;h5 id=&quot;-将一个非接口值转换为一个接口类型在这样的转换中此非接口值的类型必须实现了此接口类型&quot;&gt;● 将一个非接口值转换为一个接口类型。在这样的转换中，此非接口值的类型必须实现了此接口类型。&lt;/h5&gt;
-&lt;h5 id=&quot;-将一个接口值转换为另一个接口类型前者接口值的类型实现了后者目标接口类型&quot;&gt;● 将一个接口值转换为另一个接口类型（前者接口值的类型实现了后者目标接口类型）。&lt;/h5&gt;
-&lt;h5 id=&quot;-将一个接口值转换为一个非接口类型此非接口类型必须实现了此接口值的接口类型&quot;&gt;● 将一个接口值转换为一个非接口类型（此非接口类型必须实现了此接口值的接口类型）。&lt;/h5&gt;
-&lt;h5 id=&quot;-将一个接口值转换为另一个接口类型前者接口值的类型可以实现了也可以未实现后者目标接口类型&quot;&gt;● 将一个接口值转换为另一个接口类型（前者接口值的类型可以实现了也可以未实现后者目标接口类型）。&lt;/h5&gt;
+&lt;h5 id=&quot;go语言中有四种接口相关的类型转换情形&quot;&gt;&lt;strong&gt;Go语言中有四种接口相关的类型转换情形：&lt;/strong&gt;&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个非接口值转换为一个接口类型在这样的转换中此非接口值的类型必须实现了此接口类型&quot;&gt;● &lt;strong&gt;将一个非接口值转换为一个接口类型。在这样的转换中，此非接口值的类型必须实现了此接口类型。&lt;/strong&gt;&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个接口值转换为另一个接口类型前者接口值的类型实现了后者目标接口类型&quot;&gt;● &lt;strong&gt;将一个接口值转换为另一个接口类型（前者接口值的类型实现了后者目标接口类型）。&lt;/strong&gt;&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个接口值转换为一个非接口类型此非接口类型必须实现了此接口值的接口类型&quot;&gt;● &lt;strong&gt;将一个接口值转换为一个非接口类型（此非接口类型必须实现了此接口值的接口类型）。&lt;/strong&gt;&lt;/h5&gt;
+&lt;h5 id=&quot;-将一个接口值转换为另一个接口类型前者接口值的类型可以实现了也可以未实现后者目标接口类型&quot;&gt;● &lt;strong&gt;将一个接口值转换为另一个接口类型（前者接口值的类型可以实现了也可以未实现后者目标接口类型）。&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;p&gt;本节将介绍后面两种情形。这两种情形的合法性是在运行时刻通过类型断言来验证的。 事实上，类型断言同样也适用于上面列出的第二种情形。&lt;/p&gt;
 
-&lt;h5 id=&quot;断言的语法&quot;&gt;断言的语法&lt;/h5&gt;
+&lt;h3 id=&quot;断言的语法&quot;&gt;断言的语法&lt;/h3&gt;
 
-&lt;h5 id=&quot;1-断言被用做一个单值表达式-断言成功返回值断言失败会引起恐慌&quot;&gt;1. 断言被用做一个单值表达式 ，断言成功返回值。断言失败会引起恐慌&lt;/h5&gt;
+&lt;h5 id=&quot;1-断言被用做一个单值表达式-断言成功返回值断言失败会引起恐慌&quot;&gt;&lt;strong&gt;1. 断言被用做一个单值表达式 ，断言成功返回值。断言失败会引起恐慌&lt;/strong&gt;&lt;/h5&gt;
 
-&lt;h5 id=&quot;2-断言返回两个结果的多值表达式断言成功返回值和一个true-的bool类型-断言失败返回零值-nil-接口值-和-flase&quot;&gt;2. 断言返回两个结果的多值表达式，断言成功返回值，和一个true 的bool类型， 断言失败返回零值 nil 接口值 ，和 flase&lt;/h5&gt;
+&lt;h5 id=&quot;2-断言返回两个结果的多值表达式断言成功返回值和一个true-的bool类型-断言失败返回零值-nil-接口值-和-flase&quot;&gt;&lt;strong&gt;2. 断言返回两个结果的多值表达式，断言成功返回值，和一个true 的bool类型， 断言失败返回零值 nil 接口值 ，和 flase&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;p&gt;【示例 1】断言类型为非接口类型 : 将一个接口值转换为一个非接口类型&lt;/p&gt;
 
@@ -298,7 +849,7 @@ f := w.(*os.File) // 成功: f == os.Stdout
 c := w.(*bytes.Buffer) // 死机：接口保存*os.file，而不是*bytes.buffer
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h5 id=&quot;1-将接口转换为其他接口&quot;&gt;1. 将接口转换为其他接口&lt;/h5&gt;
+&lt;h5 id=&quot;1-将接口转换为其他接口&quot;&gt;&lt;strong&gt;1. 将接口转换为其他接口&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var obj interface = new(bird)
 f, isFlyer := obj.(Flyer)
@@ -306,7 +857,7 @@ f, isFlyer := obj.(Flyer)
 
 &lt;p&gt;代码中，new(bird) 产生 *bird 类型的 bird 实例，这个实例被保存在 interface{} 类型的 obj 变量中。使用 obj.(Flyer) 类型断言，将 obj 转换为 Flyer 接口。f 为转换成功时的 Flyer 接口类型，isFlyer 表示是否转换成功，类型就是 bool。&lt;/p&gt;
 
-&lt;h5 id=&quot;2-将接口转换为其他类型&quot;&gt;2. 将接口转换为其他类型&lt;/h5&gt;
+&lt;h5 id=&quot;2-将接口转换为其他类型&quot;&gt;&lt;strong&gt;2. 将接口转换为其他类型&lt;/strong&gt;&lt;/h5&gt;
 
 &lt;p&gt;可以实现将接口转换为普通的指针类型。例如将 Walker 接口转换为 *pig 类型，请参考下面的代码：&lt;/p&gt;
 
@@ -316,7 +867,7 @@ p2 := a.(*pig)
 fmt.Printf(&quot;p1=%p p2=%p&quot;, p1, p2)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h3 id=&quot;go语言接口的嵌套组合&quot;&gt;Go语言接口的嵌套组合&lt;/h3&gt;
+&lt;h2 id=&quot;go语言接口的嵌套组合&quot;&gt;Go语言接口的嵌套组合&lt;/h2&gt;
 
 &lt;h5 id=&quot;例一&quot;&gt;例一&lt;/h5&gt;
 
@@ -415,6 +966,294 @@ test(&amp;amp;File{})
 
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言空接口类型interface&quot;&gt;Go语言空接口类型（interface{}）&lt;/h2&gt;
+
+&lt;h5 id=&quot;1-将值保存到空接口&quot;&gt;1. 将值保存到空接口&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var any interface{}  
+
+any = 1 
+fmt.Println(any) 
+
+
+any = true 
+fmt.Println(any) 
+
+any = false 
+fmt.Println(any) 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;2-从空接口获取值&quot;&gt;2. 从空接口获取值&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;var i interface{} = 1 
+
+var b int 
+b = i              // 触发宕机了，空接口不能直接转换为int
+
+b = i.(int)       // 通过断言进行类型转换
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言类型分支switch判断空接口中变量的类型&quot;&gt;Go语言类型分支（switch判断空接口中变量的类型）&lt;/h2&gt;
+
+&lt;p&gt;一个 type-switch 流程控制代码块的语法如下所示：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;switch t := areaIntf.(type) {
+case *Square:
+	fmt.Printf(&quot;Type Square %T with value %v\n&quot;, t, t)
+case *Circle:
+	fmt.Printf(&quot;Type Circle %T with value %v\n&quot;, t, t)
+case nil:
+	fmt.Printf(&quot;nil value: nothing to check?\n&quot;)
+default:
+	fmt.Printf(&quot;Unexpected type %T\n&quot;, t)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;下面的例子将一个 interface{} 类型的参数传给 printType() 函数，通过 switch 判断 v 的类型，然后打印对应类型的提示，代码如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s2&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;printType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interface&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{})&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+		&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;is int&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+		&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;is string&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+		&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;is bool&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+
+&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;printType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1024&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;printType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pig&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;printType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言排序借助sortinterface接口&quot;&gt;Go语言排序（借助sort.Interface接口）&lt;/h2&gt;
+
+&lt;h5 id=&quot;原理-sortsortv-sortinterface-函数实现排序接受一个sortinterface-的参数&quot;&gt;&lt;strong&gt;原理： sort.Sort(v sort.Interface) 函数实现排序,接受一个sort.Interface 的参数&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;h5 id=&quot;一个内置的排序算法需要知道三个东西序列的长度表示两个元素比较的结果一种交换两个元素的方式这就是sortinterface-的三个方法&quot;&gt;&lt;strong&gt;一个内置的排序算法需要知道三个东西：序列的长度，表示两个元素比较的结果，一种交换两个元素的方式；这就是sort.Interface 的三个方法：&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sort&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Interface&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;            &lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;获取元素数量&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Less&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;，&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;是序列元素的指数。&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;Swap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;        &lt;span class=&quot;p&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;交换元素&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;自定义切片-string-的排序方法&quot;&gt;自定义切片 []string 的排序方法&lt;/h3&gt;
+
+&lt;h3 id=&quot;内置的切片排序方法&quot;&gt;内置的切片排序方法&lt;/h3&gt;
+
+&lt;p&gt;使用 sort 包的 StringSlice 类型就可以更简单快速地进行字符串切片排序 ：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func main(){
+	var str sort.StringSlice
+
+	str = sort.StringSlice{
+		&quot;apple&quot;,&quot;banana&quot;,&quot;taozi&quot;,&quot;xigua&quot;,&quot;why&quot;,&quot;cm&quot;,
+	}
+
+
+	sort.Sort(str)
+
+	fmt.Println(str)  // [apple banana cm taozi why xigua]
+
+}	
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用 sort 包的sort.IntSlice 类型进行整型切片的排序&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func sort_int(){
+
+	var i sort.IntSlice  = sort.IntSlice{6,8,9,3,2,7}
+
+	sort.Sort(i)
+
+	fmt.Println(i) // [2 3 6 7 8 9]
+
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用 sort.Strings 函数直接对字符串切片进行排序&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func sort_str1(){
+
+	var str []string = []string{&quot;apple&quot;,&quot;banana&quot;,&quot;taozi&quot;,&quot;xigua&quot;,&quot;why&quot;,&quot;cm&quot;,}
+
+	sort.Strings(str)
+
+	fmt.Println(str)  // [apple banana cm taozi why xigua]
+
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用 sort.Ints 函数直接对字符串切片进行排序&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func sort_int1(){
+
+
+	var i []int = []int{6,8,9,3,2,7}
+
+	sort.Ints(i)
+
+	fmt.Println(i)
+
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Go语言中的 sort 包中定义了一些常见类型的排序方法，如下表所示。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;sort 包中内建的类型排序接口：&lt;/th&gt;
+      &lt;th&gt; &lt;/th&gt;
+      &lt;th&gt; &lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;字符串（String）：&lt;/td&gt;
+      &lt;td&gt;StringSlice&lt;/td&gt;
+      &lt;td&gt;sort.Strings(a [] string)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;整型（int）：&lt;/td&gt;
+      &lt;td&gt;IntSlice&lt;/td&gt;
+      &lt;td&gt;sort.Ints(a []int)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;双精度浮点（float64）：&lt;/td&gt;
+      &lt;td&gt;Float64Slice&lt;/td&gt;
+      &lt;td&gt;sort.Float64s(a []float64)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;编程中经常用到的 int32、int64、float32、bool 类型并没有由 sort 包实现，使用时依然需要开发者自己编写。&lt;/p&gt;
+
+&lt;h3 id=&quot;自定义结构体的排序方法&quot;&gt;自定义结构体的排序方法&lt;/h3&gt;
+
+&lt;h3 id=&quot;内置的sortslice-进行结构体排-使用sortslice进行切片元素排序&quot;&gt;内置的sort.Slice 进行结构体排， 使用sort.Slice进行切片元素排序&lt;/h3&gt;
+
+&lt;p&gt;sort.Slice() 函数的定义如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func Slice(slice interface{}, less func(i, j int) bool)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;将一批英雄名单使用结构体定义，英雄名单的结构体中定义了英雄的名字和分类。排序时要求按照英雄的分类进行排序，相同分类的情况下按名字进行排序，详细代码实现过程如下。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;func sort_hero(){
+
+	type HeroKind int
+	const (
+		None = iota
+		Tank
+		Assassin
+		Mage
+	)
+
+
+	type Hero struct{
+		name string
+		kind HeroKind
+
+
+	}
+
+	var hero_se []*Hero = []*Hero{
+
+		&amp;amp;Hero{&quot;张飞&quot;,Mage},
+		&amp;amp;Hero{&quot;吕布&quot;,Assassin},
+		&amp;amp;Hero{&quot;关于&quot;,Tank},
+		&amp;amp;Hero{&quot;曹操&quot;,Assassin},
+		&amp;amp;Hero{&quot;张辽&quot;,Mage},
+		&amp;amp;Hero{&quot;孙权&quot;,Assassin},
+		&amp;amp;Hero{&quot;周瑜&quot;,Tank},
+
+
+
+
+	}
+
+	sort.Slice(hero_se,func(i, j int)bool{
+
+		return  hero_se[i].kind &amp;gt;  hero_se[j].kind
+
+
+	})
+
+	for index,v := range hero_se{
+
+		fmt.Println(index, *v )
+
+	}
+
+
+
+
+
+}
+
+	
+运行的结果：
+0 {张飞 3}
+1 {张辽 3}
+2 {吕布 2}
+3 {曹操 2}
+4 {孙权 2}
+5 {关于 1}
+6 {周瑜 1}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言error接口&quot;&gt;Go语言error接口：&lt;/h2&gt;
+
+&lt;p&gt;error 类型，而且没有解释它究竟是什么。实际上它就是 interface 类型，这个类型有一个返回错误信息的单一方法：&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type error interface {
+	Error() string
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;创建一个 error 的方法&lt;/p&gt;
+
+&lt;h5 id=&quot;1-调用-errorsnew-函数&quot;&gt;&lt;strong&gt;1. 调用 errors.New 函数&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;errors.New(&quot;this is a error&quot;) 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;2-调用-fmterrorf它还会处理字符串格式化&quot;&gt;&lt;strong&gt;2. 调用 fmt.Errorf，它还会处理字符串格式化。&lt;/strong&gt;&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fmt.Errorf(&quot;this is a error %d %s&quot; , a, err) 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;go语言writer和reader接口简述&quot;&gt;Go语言Writer和Reader接口简述&lt;/h2&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Writer interface {
+	Write(p []byte) (n int, err error)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上述代码中展示了 io.Writer 接口的声明。这个接口声明了唯一一个方法 Write，这个方法接受一个 byte 切片，并返回两个值。第一个值是写入的字节数，第二个值是 error 错误值。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上述代码中的 io.Reader 接口声明了一个方法 Read，这个方法接受一个 byte 切片，并返回两个值。第一个值是读入的字节数，第二个值是 error 错误值。&lt;/p&gt;
+
 </description>
         <pubDate>Tue, 03 Sep 2019 00:00:00 +0800</pubDate>
         <link>http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E6%8E%A5%E5%8F%A3-interface/</link>

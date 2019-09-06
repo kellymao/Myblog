@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go语言反射（reflection）简述</title>
+  <meta name="description" content="">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go语言反射（reflection）简述">
+  <meta name="twitter:description" content="">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go语言反射（reflection）简述">
+  <meta property="og:description" content="">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E5%8F%8D%E5%B0%84-reflection-%E7%AE%80%E8%BF%B0/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go语言反射（reflection）简述</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-09-05 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-09-05</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <p><br /></p>
+
+<h2 id="反射的基本概念">反射的基本概念</h2>
+
+<p><br /></p>
+
+<p>Go语言中的反射与其他语言有比较大的不同。首先我们要理解两个基本概念 Type 和 Value，它们也是 Go语言包中 reflect 空间里最重要的两个类型。我们先看一下下面的定义：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type MyReader struct {
+	Name string
+}
+func (r MyReader)Read(p []byte) (n int, err error) {
+	// 实现自己的Read方法
+}
+</code></pre></div></div>
+
+<p>因为 MyReader 类型实现了 io.Reader 接口的所有方法（其实就是一个 Read() 函数），所以 MyReader 实现了接口 io.Reader。我们可以按如下方式来进行 MyReader 的实例化和赋值：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>var reader io.Reader
+reader = &amp;MyReader{"a.txt"}
+</code></pre></div></div>
+
+<p>现在我们可以再来解释一下什么是 Type，什么是 Value。</p>
+
+<p>对所有接口进行反射，都可以得到一个包含 Type 和 Value 的信息结构。比如我们对上例的 reader 进行反射，也将得到一个 Type 和 Value，Type 为 io.Reader，Value 为 MyReader{“a.txt”}。顾名思义，Type 主要表达的是被反射的这个变量本身的类型信息，而 Value 则为该变量实例本身的信息。</p>
+
+<p><br /></p>
+
+<h2 id="反射规则浅析">反射规则浅析</h2>
+
+<p><br /></p>
+
+<p>前面讲解了 Value 和 Type 的基本概念，本节重点讲解反射对象 Value、Type 和类型实例之间的相互转化。实例、Value、Type 三者之间的转换关系如下图所示。</p>
+
+<p><img src="http://c.biancheng.net/uploads/allimg/190813/4-1ZQ31336163P.gif" alt="" /></p>
+
+<h5 id="反射-api-的分类总结如下"><strong>反射 API 的分类总结如下:</strong></h5>
+
+<h5 id="1-通过实例获取-value-对象直接使用-reflectvalueof-函数"><strong>1. 通过实例获取 Value 对象，直接使用 reflect.ValueOf() 函数</strong></h5>
+
+<h5 id="2-通过实例获取反射对象的-type直接使用-reflecttypeof-函数"><strong>2. 通过实例获取反射对象的 Type，直接使用 reflect.TypeOf() 函数</strong></h5>
+
+<h5 id="3-从-value-获取反射对象的-type可以直接调用-valuetype方法因为-value-内部存放着到-type-类型的指针"><strong>3. 从 Value 获取反射对象的 Type，可以直接调用 Value.Type()方法，因为 Value 内部存放着到 Type 类型的指针</strong></h5>
+
+<h5 id="4-value-到实例的转换value-本身就包含类型和值信息reflect-提供了丰富的方法来实现从-value-到实例的转换"><strong>4. Value 到实例的转换，Value 本身就包含类型和值信息，reflect 提供了丰富的方法来实现从 Value 到实例的转换</strong></h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//该方法最通用，用来将 Value 转换为空接口，该空接口内部存放具体类型实例
+
+func (v Value) Interface() （i interface{})
+
+//Value 自身也提供丰富的方法，直接将 Value 转换为简单类型实例，如果类型不匹配，则直接引起 panic
+
+func (v Value) Bool () bool
+func (v Value) Float() float64
+func (v Value) Int() int64
+func (v Value) Uint() uint64
+</code></pre></div></div>
+
+<h5 id="5-从一个指针类型的-value-获得值类型-value-直接调用-elem-方法"><strong>5. 从一个指针类型的 Value 获得值类型 Value， 直接调用 Elem() 方法</strong></h5>
+
+<h5 id="6-从一个指针类型的-type-获得值类型-type-也是直接调用-elem-方法"><strong>6. 从一个指针类型的 Type 获得值类型 Type ，也是直接调用 Elem() 方法</strong></h5>
+
+<h5 id="7-判断value-值的可修改性-canset-方法修改value的值--setx-value-方法"><strong>7. 判断Value 值的可修改性 CanSet() 方法，修改value的值  Set(x Value) 方法</strong></h5>
+
+<p><br /></p>
+
+<h2 id="理解反射的类型type与种类kind">理解反射的类型（Type）与种类（Kind）</h2>
+
+<p><br /></p>
+
+<h3 id="1-反射种类kind的定义">1) 反射种类（Kind）的定义</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>种类（Kind）指的是对象归属的品种，在 reflect 包中有如下定义：
+
+type Kind uint
+const (
+	Invalid Kind = iota  // 非法类型
+	Bool                 // 布尔型
+	Int                  // 有符号整型
+	Int8                 // 有符号8位整型
+	Int16                // 有符号16位整型
+	Int32                // 有符号32位整型
+	Int64                // 有符号64位整型
+	Uint                 // 无符号整型
+	Uint8                // 无符号8位整型
+	Uint16               // 无符号16位整型
+	Uint32               // 无符号32位整型
+	Uint64               // 无符号64位整型
+	Uintptr              // 指针
+	Float32              // 单精度浮点数
+	Float64              // 双精度浮点数
+	Complex64            // 64位复数类型
+	Complex128           // 128位复数类型
+	Array                // 数组
+	Chan                 // 通道
+	Func                 // 函数
+	Interface            // 接口
+	Map                  // 映射
+	Ptr                  // 指针
+	Slice                // 切片
+	String               // 字符串
+	Struct               // 结构体
+	UnsafePointer        // 底层指针
+)
+</code></pre></div></div>
+
+<h3 id="2-类型type的定义">2) 类型（Type）的定义</h3>
+
+<p>Go 程序中的类型（Type）指的是系统原生数据类型，如 int、string、bool、float32 等类型，以及使用 type 关键字定义的类型，这些类型的名称就是其类型本身的名称。例如使用 type A struct{} 定义结构体时，A 就是 struct{} 的类型。</p>
+
+<h2 id="go语言通过反射获取-type-的相关方法">Go语言通过反射获取 Type 的相关方法</h2>
+
+<h3 id="基本的方法">基本的方法：</h3>
+
+<p>t_ptr := reflect.TypeOf(&amp;a)  获取反射对象的 Type</p>
+
+<p>t := t_ptr.Elem() 从指针获取值 ，得到reflect.Type 对象</p>
+
+<p>t.Name()  返回的是类型</p>
+
+<p>t.Kind()  返回是种类，const定义的常量</p>
+
+<p>t.Kind() == reflect.Float64  可以直接进行比较，结果为true 或者 false的布尔值</p>
+
+<p>t.String() 跟直接fmt.Println(t) 结果是一样的</p>
+
+<p>t.NumField() 返回字段的个数</p>
+
+<p>t.Field(i) 返回某一个字段的 StructField 结构</p>
+
+<p>fieldType := t.Field(i) ; fieldType.Name, fieldType.Tag 返回某一个字段的名字 和 tag信息</p>
+
+<p>fieldType := t.Field(i) ; fieldType.Tag.Get(“json”)  从tag中获取特定的tag信息</p>
+
+<p>t_ptr.NumMethod() 返回方法的数量 （此处要注意：结构体的方法使用指针定义的，所以用指针来获取）</p>
+
+<p>t_ptr.Method(i) 返回某一个方法的 reflect.Method , 是string类型</p>
+
+<p>method_name := t_ptr.Method(i) ; method_name.Name  返回某一个方法的名字</p>
+
+<h3 id="获取结构体的成员的方法">获取结构体的成员的方法</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>方法</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Field(i int) StructField</td>
+      <td>根据索引，返回索引对应的结构体字段的信息。当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>NumField() int</td>
+      <td>返回结构体成员字段数量。当类型不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>FieldByName(name string) (StructField, bool)</td>
+      <td>根据给定字符串返回字符串对应的结构体字段的信息。没有找到时 bool 返回 false，当类型不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>FieldByIndex(index []int) StructField</td>
+      <td>多层成员访问时，根据 []int 提供的每个结构体的字段索引，返回字段的信息。没有找到时返回零值。当类型不是结构体或索引超界时 发生宕机</td>
+    </tr>
+    <tr>
+      <td>FieldByNameFunc( match func(string) bool) (StructField,bool)</td>
+      <td>根据匹配函数匹配需要的字段。当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="获取结构体标签struct-tag的方法">获取结构体标签（Struct Tag）的方法：</h3>
+
+<p>使用 StructField 中 Tag 的 Get() 方法</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>typeOfCat := reflect.TypeOf(cat{})
+if catType, ok := typeOfCat.FieldByName("Type"); ok {
+    fmt.Println(catType.Tag.Get("json"))
+}
+</code></pre></div></div>
+
+<h2 id="go语言通过反射获取-value-的相关方法">Go语言通过反射获取 Value 的相关方法</h2>
+
+<h3 id="基本的方法-1">基本的方法：</h3>
+
+<p>v_ptr := reflect.ValueOf(&amp;x) 返回一个Value 值类型</p>
+
+<p>v := v_ptr.Elem() 从指针获取值 , 返回一个reflect.Value对象</p>
+
+<p>v.Kind()  返回const定义的常量</p>
+
+<p>v.Type()  获取反射对象的 Type</p>
+
+<p>v.Kind() == reflect.Float64  可以直接进行比较，结果为true 或者 false的布尔值</p>
+
+<p>v.Field(i)  返回一个Value对象</p>
+
+<p>v.NumField() int	返回结构体成员字段数量</p>
+
+<p>v.NumMethod()  返回方法的数量</p>
+
+<p>v_ptr.Method(i)   返回一个reflect.Value对象</p>
+
+<p>me := v_ptr.Method(i) ; me.Type()  返回一个reflect.Type 类型 ，拥有上面介绍的type的所有方法</p>
+
+<p>me := v_ptr.Method(0); v_ptr.Method(0).Call()</p>
+
+<h3 id="从反射值对象获取被包装的值">从反射值对象获取被包装的值</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>方法名</th>
+      <th>说  明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Interface() interface {}</td>
+      <td>将值以 interface{} 类型返回，可以通过类型断言转换为指定类型</td>
+    </tr>
+    <tr>
+      <td>Int() int64</td>
+      <td>将值以 int 类型返回，所有有符号整型均可以此方式返回</td>
+    </tr>
+    <tr>
+      <td>Uint() uint64</td>
+      <td>将值以 uint 类型返回，所有无符号整型均可以此方式返回</td>
+    </tr>
+    <tr>
+      <td>Float() float64</td>
+      <td>将值以双精度（float64）类型返回，所有浮点数（float32、float64）均可以此方式返回</td>
+    </tr>
+    <tr>
+      <td>Bool() bool</td>
+      <td>将值以 bool 类型返回</td>
+    </tr>
+    <tr>
+      <td>Bytes() []bytes</td>
+      <td>将值以字节数组 []bytes 类型返回</td>
+    </tr>
+    <tr>
+      <td>String() string</td>
+      <td>将值以字符串类型返回</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="反射访问结构体成员的值">反射访问结构体成员的值</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>方  法</th>
+      <th>备  注</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Field(i int) Value</td>
+      <td>根据索引，返回索引对应的结构体成员字段的反射值对象。当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>NumField() int</td>
+      <td>返回结构体成员字段数量。当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>FieldByName(name string) Value</td>
+      <td>根据给定字符串返回字符串对应的结构体字段。没有找到时返回零值，当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>FieldByIndex(index []int) Value</td>
+      <td>多层成员访问时，根据 []int 提供的每个结构体的字段索引，返回字段的值。 没有找到时返回零值，当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+    <tr>
+      <td>FieldByNameFunc(match func(string) bool) Value</td>
+      <td>根据匹配函数匹配需要的字段。找到时返回零值，当值不是结构体或索引超界时发生宕机</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="go语言通过反射修改变量的值">GO语言通过反射修改变量的值</h2>
+
+<p>修改普通变量值得例子：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"reflect"</span>
+<span class="p">)</span>
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">声明整型变量</span><span class="n">a</span><span class="err">并赋初值</span>
+	<span class="n">var</span> <span class="n">a</span> <span class="n">int</span> <span class="p">=</span> <span class="m">1024</span>
+	<span class="p">//</span> <span class="err">获取变量</span><span class="n">a</span><span class="err">的反射值对象</span><span class="p">(</span><span class="n">a</span><span class="err">的地址</span><span class="p">)</span>
+	<span class="n">valueOfA</span> <span class="p">:=</span> <span class="n">reflect</span><span class="p">.</span><span class="n">ValueOf</span><span class="p">(&amp;</span><span class="n">a</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">取出</span><span class="n">a</span><span class="err">地址的元素</span><span class="p">(</span><span class="n">a</span><span class="err">的值</span><span class="p">)</span>
+	<span class="n">valueOfA</span> <span class="p">=</span> <span class="n">valueOfA</span><span class="p">.</span><span class="n">Elem</span><span class="p">()</span>
+	<span class="p">//</span> <span class="err">修改</span><span class="n">a</span><span class="err">的值为</span><span class="m">1</span>
+	<span class="n">valueOfA</span><span class="p">.</span><span class="n">SetInt</span><span class="p">(</span><span class="m">1</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">打印</span><span class="n">a</span><span class="err">的值</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valueOfA</span><span class="p">.</span><span class="n">Int</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>修改结构体值得例子：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"reflect"</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">type</span> <span class="n">dog</span> <span class="n">struct</span> <span class="p">{</span>
+			<span class="n">LegCount</span> <span class="n">int</span>
+	<span class="p">}</span>
+	<span class="p">//</span> <span class="err">获取</span><span class="n">dog</span><span class="err">实例地址的反射值对象</span>
+	<span class="n">valueOfDog</span> <span class="p">:=</span> <span class="n">reflect</span><span class="p">.</span><span class="n">ValueOf</span><span class="p">(&amp;</span><span class="n">dog</span><span class="p">{})</span>
+	<span class="p">//</span> <span class="err">取出</span><span class="n">dog</span><span class="err">实例地址的元素</span>
+	<span class="n">valueOfDog</span> <span class="p">=</span> <span class="n">valueOfDog</span><span class="p">.</span><span class="n">Elem</span><span class="p">()</span>
+	<span class="p">//</span> <span class="err">获取</span><span class="n">legCount</span><span class="err">字段的值</span>
+	<span class="n">vLegCount</span> <span class="p">:=</span> <span class="n">valueOfDog</span><span class="p">.</span><span class="n">FieldByName</span><span class="p">(</span><span class="s2">"LegCount"</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">尝试设置</span><span class="n">legCount</span><span class="err">的值</span><span class="p">(</span><span class="err">这里会发生崩溃</span><span class="p">)</span>
+	<span class="n">vLegCount</span><span class="p">.</span><span class="n">SetInt</span><span class="p">(</span><span class="m">4</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">vLegCount</span><span class="p">.</span><span class="n">Int</span><span class="p">())</span>
+</code></pre></div></div>
+
+<h2 id="go语言通过反射调用函数">Go语言通过反射调用函数</h2>
+
+<p>如果反射值对象（reflect.Value）中值的类型为函数时，可以通过 reflect.Value 调用该函数。使用反射调用函数时，需要将参数使用反射值对象的切片 []reflect.Value 构造后传入 Call() 方法中，调用完成时，函数的返回值通过 []reflect.Value 返回。</p>
+
+<p>下面的代码声明一个加法函数，传入两个整型值，返回两个整型值的和。将函数保存到反射值对象（reflect.Value）中，然后将两个整型值构造为反射值对象的切片（[]reflect.Value），使用 Call() 方法进行调用。</p>
+
+<p>反射调用函数：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"reflect"</span>
+<span class="p">)</span>
+<span class="p">//</span> <span class="err">普通函数</span>
+<span class="n">func</span> <span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="n">int</span><span class="p">)</span> <span class="n">int</span> <span class="p">{</span>
+	<span class="n">return</span> <span class="n">a</span> <span class="p">+</span> <span class="n">b</span>
+<span class="p">}</span>
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="p">//</span> <span class="err">将函数包装为反射值对象</span>
+	<span class="n">funcValue</span> <span class="p">:=</span> <span class="n">reflect</span><span class="p">.</span><span class="n">ValueOf</span><span class="p">(</span><span class="n">add</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">构造函数参数</span><span class="p">,</span> <span class="err">传入两个整型值</span>
+	<span class="n">paramList</span> <span class="p">:=</span> <span class="p">[]</span><span class="n">reflect</span><span class="p">.</span><span class="n">Value</span><span class="p">{</span><span class="n">reflect</span><span class="p">.</span><span class="n">ValueOf</span><span class="p">(</span><span class="m">10</span><span class="p">),</span> <span class="n">reflect</span><span class="p">.</span><span class="n">ValueOf</span><span class="p">(</span><span class="m">20</span><span class="p">)}</span>
+	<span class="p">//</span> <span class="err">反射调用函数</span>
+	<span class="n">retList</span> <span class="p">:=</span> <span class="n">funcValue</span><span class="p">.</span><span class="n">Call</span><span class="p">(</span><span class="n">paramList</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">获取第一个返回值</span><span class="p">,</span> <span class="err">取整数值</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">retList</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">Int</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>代码说明如下：</p>
+
+<p>第 9～12 行，定义一个普通的加法函数。</p>
+
+<p>第 17 行，将 add 函数包装为反射值对象。</p>
+
+<p>第 20 行，将 10 和 20 两个整型值使用 reflect.ValueOf 包装为 reflect.Value，再将反射值对象的切片 []reflect.Value 作为函数的参数。</p>
+
+<p>第 23 行，使用 funcValue 函数值对象的 Call() 方法，传入参数列表 paramList 调用 add() 函数。</p>
+
+<p>第 26 行，调用成功后，通过 retList[0] 取返回值的第一个参数，使用 Int 取返回值的整数值。</p>
+
+<p>提示</p>
+
+<p>反射调用函数的过程需要构造大量的 reflect.Value 和中间变量，对函数参数值进行逐一检查，还需要将调用参数复制到调用函数的参数内存中。调用完毕后，还需要将返回值转换为 reflect.Value，用户还需要从中取出调用值。因此，反射调用函数的性能问题尤为突出，不建议大量使用反射函数调用。</p>
+
+<h2 id="一个完整的例子">一个完整的例子：</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Stu struct{
+
+
+	Name string `json:"stu_name"`
+	Age int
+}
+
+func (s *Stu) Printstu() {
+
+	fmt.Println("xxxxx",s)
+}
+
+
+func (s *Stu) Printage(a int, b int ) int {
+
+	fmt.Println("xxxxx ",s)
+	fmt.Println("result is ", a+b)
+
+	return a+b
+}
+
+func test_reflect(){
+
+
+
+
+	var stu *Stu = &amp;Stu{"zhangsan",10,}
+	stu.Printstu()
+
+	t_ptr := reflect.TypeOf(stu)
+
+	t:=t_ptr.Elem()
+
+	fmt.Println(t)
+	fmt.Printf("t Name() is %v",t.Name())
+	fmt.Println()
+	fmt.Printf("t Kind() is %v\n",t.Kind())
+
+	fmt.Printf("t String() is %v",t.String())
+	fmt.Println()
+	fmt.Printf("t NumField() is %v",t.NumField())
+	fmt.Println()
+	fmt.Printf("t_ptr NumMethod() is %v \n",t_ptr.NumMethod())
+
+
+	fmt.Printf("t_ptr Method(0) is %T %v \n ",t_ptr.Method(0),t_ptr.Method(0))
+
+	fmt.Printf("t_ptr Method(0).Name is %v \n ",t_ptr.Method(0).Name)  //Printstu
+
+	fmt.Println()
+	fmt.Printf("t Field(1) is %T %v",t.Field(0),t.Field(0))
+	fmt.Println()
+	fmt.Printf("t Field(1).Name is %v",t.Field(0).Name)
+	fmt.Println()
+	fmt.Printf("t Field(1).Tag is %s",t.Field(0).Tag)
+	fmt.Println()
+
+
+	fmt.Printf("t Field(1).Tag.Get('json') is %s \n ",t.Field(0).Tag.Get("json"))
+
+	s,ok:=t.FieldByName("Name")
+	if ok {
+
+		fmt.Println(s.Name )
+		fmt.Println(s.Tag )
+	}
+
+
+	v_ptr := reflect.ValueOf(stu)
+
+	v:=v_ptr.Elem()
+
+	fmt.Println(v)
+
+	fmt.Println()
+	fmt.Printf("v Type() is %T %v \n",v.Type(),v.Type())
+
+	fmt.Printf("v Type().Field(0) is %T %v %v\n",v.Type().Field(0),v.Type().Field(0),v.Type().Field(0).Name)
+
+	fmt.Printf("v Kind() is %v",v.Kind())
+	fmt.Println()
+	fmt.Printf("v NumField() is %v",v.NumField())
+	fmt.Println()
+	fmt.Printf("v_ptr NumMethod() is %v \n ",v_ptr.NumMethod())
+
+	fmt.Printf("v_ptr Method(0) is %T %v \n",v_ptr.Method(0),v_ptr.Method(0))
+
+
+
+	fmt.Printf("v_ptr Method(0).Type() is %T %v \n",v_ptr.Method(0).Type(),v_ptr.Method(0))
+
+	fmt.Printf("v_ptr Method(0).Type().Name() String() is %v %v \n",v_ptr.Method(0).Type().Name(),v_ptr.Method(0).Type().String())
+
+
+
+	var paramList0  []reflect.Value   // 没有值得情况
+
+	retList0 :=v_ptr.Method(1).Call(paramList0)
+	fmt.Println(retList0)
+
+	paramList1 := []reflect.Value{reflect.ValueOf(10),reflect.ValueOf(20)}  // 传值的情况
+
+	retList1  := v_ptr.Method(0).Call(paramList1)
+
+	fmt.Println(retList1)
+
+	fmt.Println(retList1[0].Int())  // 获取第一个返回值, 取整数值
+
+	fmt.Println()
+	fmt.Printf("v Field(1) is %T %v",v.Field(0),v.Field(0))
+	fmt.Println()
+	fmt.Printf("v Field(1).CanSet is %v",v.Field(0).CanSet())
+	fmt.Println()
+	fmt.Printf("v Field(1).Interface is %s",v.Field(0).Interface())
+	fmt.Println()
+
+	fmt.Printf("v FieldByName('Name').Interface is %T %s \n",v.FieldByName("Name"),v.FieldByName("Name").Interface())
+
+
+
+
+
+}
+</code></pre></div></div>
+
+<p>执行的结果：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>main.Stu
+t Name() is Stu
+t Kind() is struct
+t String() is main.Stu
+t NumField() is 2
+t_ptr NumMethod() is 2 
+t_ptr Method(0) is reflect.Method {Printage  func(*main.Stu, int, int) int &lt;func(*main.Stu, int, int) int Value&gt; 0} 
+ t_ptr Method(0).Name is Printage 
+ 
+t Field(1) is reflect.StructField {Name  string json:"stu_name" 0 [0] false}
+t Field(1).Name is Name
+t Field(1).Tag is json:"stu_name"
+t Field(1).Tag.Get('json') is stu_name 
+ Name
+json:"stu_name"
+{zhangsan 10}
+
+v Type() is *reflect.rtype main.Stu 
+v Type().Field(0) is reflect.StructField {Name  string json:"stu_name" 0 [0] false} Name
+v Kind() is struct
+v NumField() is 2
+v_ptr NumMethod() is 2 
+ v_ptr Method(0) is reflect.Value 0x49d570 
+v_ptr Method(0).Type() is *reflect.rtype 0x49d570 
+v_ptr Method(0).Type().Name() String() is  func(int, int) int 
+xxxxx &amp;{zhangsan 10}
+[]
+xxxxx  &amp;{zhangsan 10}
+result is  30
+[&lt;int Value&gt;]
+30
+
+v Field(1) is reflect.Value zhangsan
+v Field(1).CanSet is true
+v Field(1).Interface is zhangsan
+v FieldByName('Name').Interface is reflect.Value zhangsan 	
+</code></pre></div></div>
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80%E6%8E%A5%E5%8F%A3-interface/" data-toggle="tooltip" data-placement="top" title="Go语言接口（interface）">上一篇：  <span>Go语言接口（interface）</span>
+            </a>
+        </li>
+        
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="http://xiaomao.io/">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>
