@@ -20,7 +20,7 @@ title: 关于我
 <p>
 
 如果你想搭建一个跟我一样的博客，可以看我的 
-<a href="/2016/10/jekyll_tutorials1/"> Jekyll 搭建个人博客 </a>
+<a href="/2019/08/jekyll%E5%8D%9A%E5%AE%A2%E7%9A%84%E9%83%A8%E7%BD%B2/"> Jekyll 搭建个人博客 </a>
 教程
 
 <p>
@@ -29,7 +29,6 @@ title: 关于我
 
 <p> 
 
-博客源码在 <a target="_blank" href='https://github.com/leopardpan/leopardpan.github.io/'>Github</a> 上，你的 Star 是我更新的动力，谢谢~
 
 <p> 
 

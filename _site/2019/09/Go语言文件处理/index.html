@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go 语言文件处理</title>
+  <meta name="description" content="Go 语言读写与io 接口">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go 语言文件处理">
+  <meta name="twitter:description" content="Go 语言读写与io 接口">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go 语言文件处理">
+  <meta property="og:description" content="Go 语言读写与io 接口">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E6%96%87%E4%BB%B6%E5%A4%84%E7%90%86/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go 语言文件处理</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-09-09 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-09-09</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="go-语言读写与io-接口">Go 语言读写与io 接口</h2>
+
+<p><br /></p>
+
+<p>写：写入到实现了 io.Writer 接口 的对象， 包括输出到终端，文件，或者网络，只要实现了io.Writer 接口即可</p>
+
+<p>读：从实现了 io.Reader 接口的对象中读取</p>
+
+<h2 id="go-语言终端读写和文件读写">Go 语言终端读写和文件读写</h2>
+
+<p><br /></p>
+
+<h3 id="终端读写">终端读写</h3>
+
+<p><br /></p>
+
+<p>在 Go语言中，文件使用指向 os.File 类型的指针来表示的，也叫做文件句柄。在前面章节使用到过标准输入 os.Stdin 和标准输出 os.Stdout ，他们的类型都是 *os.File</p>
+
+<p>os.File 封装了所有文件相关的操作，是struct类型，os.Stdin,os.Stderr,os.Stdout 都属于*os.File</p>
+
+<h3 id="文件读写">文件读写</h3>
+
+<p><br /></p>
+
+<p>os.Open(name string)(*os.File,error) 读
+os.OpenFile 读写 
+os.Create(name string)</p>
+
+<p>除了文件句柄，我们还需要 bufio 的写入器。我们以只读模式打开文件 output.dat ，如果文件不存在则自动创建：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>outputFile, outputError := os.OpenFile(“output.dat”, os.O_WRONLY|os.O_ CREATE, 0666)
+
+可以看到，OpenFile 函数有三个参数：文件名、一个或多个标志（使用逻辑运算符“|”连接），使用的文件权限。
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>我们通常会用到以下标志：</p>
+
+<p>os.O_RDONLY：只读</p>
+
+<p>os.WRONLY：只写</p>
+
+<p>os.O_CREATE：创建：如果指定文件不存在，就创建该文件。</p>
+
+<p>os.O_TRUNC：截断：如果指定文件已存在，就将该文件的长度截为 0。</p>
+
+<h3 id="fmt-包进行读写操作">fmt 包进行读写操作</h3>
+
+<p><br /></p>
+
+<p>表：fmt 中的扫描函数</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>语法</th>
+      <th>描述</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>fmt.Fscan(r, args)</td>
+      <td>读取 r 中连续的空格或者空行分隔值以填充 args</td>
+    </tr>
+    <tr>
+      <td>fmt.Fscanf(r, fs, args)</td>
+      <td>读取 r 中连续的空格分隔的指定为 fs 格式的值以填充 args</td>
+    </tr>
+    <tr>
+      <td>fmt.Fscanln(r, args)</td>
+      <td>读取 r 中连续的空格分隔的值以填充 args，同时以新行或者 io.EOF 结尾</td>
+    </tr>
+    <tr>
+      <td>fmt.Scan(args)</td>
+      <td>读取 os.Stdin 中连续的空行分隔的值以填充 args</td>
+    </tr>
+    <tr>
+      <td>fmt.Scanf(fs, args)</td>
+      <td>读取 os.Stdin 中连续的空格分隔的指定为 fs 格式的值以填充 args</td>
+    </tr>
+    <tr>
+      <td>fmt.Scanln(args)</td>
+      <td>读取 os.Stdin 中连续的空格分隔的值以填充 args，以新行或 io.EOF 结束</td>
+    </tr>
+    <tr>
+      <td>fmt.Sscan(s, args)</td>
+      <td>读取 s 中连续的空行分隔的值以填充 args</td>
+    </tr>
+    <tr>
+      <td>fmt.Sscanf(s, fs, args)</td>
+      <td>读取 s 中连续的空格分隔的指定为 fs 格式的值以填充 args</td>
+    </tr>
+    <tr>
+      <td>fmt.Sscanln(s, args)</td>
+      <td>读取 s 中连续的空格分隔的值以填充 args，同时以新行或者 io.EOF 结束</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>其中：参数 r 是一个从其中读数据的 io.Reader，s 是一个从其中读数据的字符串，fs 是一个用于 fmt 包中打印函数的格式化字符串，args 表示一个或者多个需填充的值的指针。所有这些扫描函数返回成功解析（即填充）项的数量，以及另一个空或者非空的错误值。</p>
+
+<p>如果 fmt.Sscanf() 函数不能读入与我们所提供的值相同数量的项，或者如果发生了错误（例如，读取错误），函数就会返回一个非空的错误值。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Student struct{
+
+Name string
+Age int
+Score float32
+
+}
+
+var str="stu01 18 98.6"
+var stu *Student = new(Student)
+
+fmt.Sscanf(str,"%s %d %f", &amp;stu.Name,&amp;stu.Age,&amp;stu.Score)
+fmt.Println(*stu)
+
+fmt.Sscanln(str,"%s %d %f", &amp;stu.Name,&amp;stu.Age,&amp;stu.Score)
+fmt.Println(*stu)
+
+var firstname, lastname string
+
+fmt.Scan(&amp;firstname,&amp;lastname)
+fmt.Println("firstname:",firstname)
+fmt.Println("lastname:",lastname)
+
+
+var firstname1, lastname1 string
+var age int
+
+fmt.Scanln(&amp;firstname1,&amp;lastname1)
+fmt.Println("firstname1:",firstname1)
+fmt.Println("lastname1:",lastname1)
+
+fmt.Scanln(&amp;age)
+
+fmt.Println(age)
+
+/*
+
+./example-rw
+{stu01 18 98.6}
+{stu01 18 98.6}
+abc
+ef
+firstname: abc
+lastname: ef
+abc df
+firstname1: abc
+lastname1: df
+10
+10
+
+
+ */
+ 
+ 
+var firstname1, lastname1 string
+var age int
+
+
+fmt.Scanf("the student name is %s , %s ,age is %d",&amp;firstname1,&amp;lastname1,&amp;age)
+
+
+fmt.Println("firstname1:",firstname1)
+fmt.Println("lastname1:",lastname1)
+
+
+
+fmt.Println(age)
+
+/*
+
+root@pts/1 # ./example-rw
+the student name is 1hj , fds ,age is 19
+firstname1: 1hj
+lastname1: fds
+19
+
+ */
+</code></pre></div></div>
+
+<h3 id="fmt-包进行读写带缓存区-bufio">fmt 包进行读写带缓存区 bufio</h3>
+
+<p><br /></p>
+
+<p><strong>bufio.NewReader 接受一个接口 io.Reader ,文件、网络、终端均可以,返回 *bufio.Reader 实例</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">//</span><span class="err">终端读一行</span>
+
+<span class="n">var</span> <span class="n">inputReader</span> <span class="p">*</span><span class="n">bufio</span><span class="p">.</span><span class="n">Reader</span>
+<span class="n">var</span> <span class="n">input</span> <span class="k">string</span> 
+<span class="n">var</span> <span class="n">err</span> <span class="n">error</span> 
+
+<span class="n">func</span> <span class="n">main</span><span class="p">(){</span>
+
+	<span class="n">inputReader</span> <span class="p">=</span> <span class="n">bufio</span><span class="p">.</span><span class="n">NewReader</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Stdin</span><span class="p">)</span> 
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"please enter some input:"</span><span class="p">)</span> 
+	
+	<span class="n">input</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">inputReader</span><span class="p">.</span><span class="n">ReadString</span><span class="p">(</span><span class="s1">'\n'</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span> 
+	<span class="p">}</span>
+	
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
+
+	
+
+<span class="p">}</span>
+
+<span class="p">//</span><span class="err">文件读所有行</span>
+
+<span class="n">var</span> <span class="n">inputReader</span> <span class="p">*</span><span class="n">bufio</span><span class="p">.</span><span class="n">Reader</span>
+<span class="n">var</span> <span class="n">input</span> <span class="k">string</span> 
+<span class="n">var</span> <span class="n">err</span> <span class="n">error</span> 
+
+<span class="n">func</span> <span class="n">main</span><span class="p">(){</span>
+
+	<span class="n">file</span><span class="p">,</span> <span class="n">err</span><span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"/tmp/aaa.log"</span><span class="p">)</span>
+	
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!= nil {
+</span>	
+		<span class="n">return</span> 
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">file</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span> 
+	
+	
+	<span class="n">inputReader</span> <span class="p">=</span> <span class="n">bufio</span><span class="p">.</span><span class="n">NewReader</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> 
+	
+	
+	<span class="n">for</span> <span class="p">{</span> 
+	<span class="n">input</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">inputReader</span><span class="p">.</span><span class="n">ReadString</span><span class="p">(</span><span class="s1">'\n'</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="k">if</span> <span class="n">err</span> <span class="p">==</span> <span class="n">io</span><span class="p">.</span><span class="n">EOF</span> <span class="p">{</span>
+		
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"read finished"</span><span class="p">)</span>
+		<span class="p">}</span> <span class="k">else</span><span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span> 
+		<span class="p">}</span>
+	<span class="p">}</span>
+	
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">input</span><span class="p">)</span>
+
+	<span class="p">}</span>
+
+<span class="p">}</span>
+
+
+<span class="p">//</span> <span class="err">按列读取文件</span> <span class="n">fmt</span><span class="p">.</span><span class="n">Fscanln</span> 
+
+
+<span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"os"</span>
+<span class="p">)</span>
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">file</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"products2.txt"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">file</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="n">var</span> <span class="n">col1</span><span class="p">,</span> <span class="n">col2</span><span class="p">,</span> <span class="n">col3</span> <span class="p">[]</span><span class="k">string</span>
+	<span class="n">for</span> <span class="p">{</span>
+		<span class="n">var</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span> <span class="k">string</span>
+		<span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">fmt</span><span class="p">.</span><span class="n">Fscanln</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="p">&amp;</span><span class="n">v1</span><span class="p">,</span> <span class="p">&amp;</span><span class="n">v2</span><span class="p">,</span> <span class="p">&amp;</span><span class="n">v3</span><span class="p">)</span>
+		<span class="p">//</span> <span class="n">scans</span> <span class="k">until</span> <span class="n">newline</span>
+		<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>			<span class="k">break</span>
+		<span class="p">}</span>
+		<span class="n">col1</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">col1</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
+		<span class="n">col2</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">col2</span><span class="p">,</span> <span class="n">v2</span><span class="p">)</span>
+		<span class="n">col3</span> <span class="p">=</span> <span class="n">append</span><span class="p">(</span><span class="n">col3</span><span class="p">,</span> <span class="n">v3</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">col1</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">col2</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">col3</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+
+
+<span class="p">//</span> <span class="err">按字节读取二进制文件</span> 
+
+
+<span class="n">func</span> <span class="n">read_file</span><span class="p">(){</span>
+
+
+	<span class="n">inputfile</span><span class="p">,</span><span class="n">inputerr</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"/tmp/src.txt"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">inputerr</span> <span class="c1">!=nil{
+</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+
+
+	<span class="n">inputReader</span> <span class="p">:=</span> <span class="n">bufio</span><span class="p">.</span><span class="n">NewReader</span><span class="p">(</span><span class="n">inputfile</span><span class="p">)</span>
+
+	<span class="n">buf</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">byte</span><span class="p">,</span> <span class="m">1024</span><span class="p">)</span>
+
+	<span class="n">for</span> <span class="p">{</span>
+		<span class="n">n</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">inputReader</span><span class="p">.</span><span class="n">Read</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+
+
+		<span class="p">/*</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span> <span class="p">{</span> <span class="k">break</span><span class="p">}</span>
+		 <span class="p">*/</span>
+
+		<span class="k">if</span> <span class="n">err</span> <span class="p">==</span> <span class="n">io</span><span class="p">.</span><span class="n">EOF</span> <span class="p">{</span>
+			<span class="k">break</span>
+		<span class="p">}</span>
+
+		<span class="p">//</span><span class="n">os</span><span class="p">.</span><span class="n">Stdout</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="n">buf</span><span class="p">[:</span><span class="n">n</span><span class="p">])</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s"</span><span class="p">,</span><span class="n">buf</span><span class="p">[:</span><span class="n">n</span><span class="p">])</span>
+
+	<span class="p">}</span>
+<span class="p">}</span>	
+</code></pre></div></div>
+
+<p>在读文件的时候，文件的权限是被忽略的，所以在使用 OpenFile 时传入的第三个参数可以用 0。而在写文件时，不管是 Unix 还是 Windows，都需要使用 0666。</p>
+
+<p>然后，我们创建一个写入器（缓冲区）对象：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>outputWriter := bufio.NewWriter(outputFile)
+</code></pre></div></div>
+
+<p>接着，使用一个 for 循环，将字符串写入缓冲区，写 10 次：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>outputWriter.WriteString(outputString)
+</code></pre></div></div>
+
+<p>缓冲区的内容紧接着被完全写入文件：outputWriter.Flush()</p>
+
+<p>如果写入的东西很简单，我们可以使用fmt.Fprintf(outputFile, “Some test data.\n”)直接将内容写入文件。fmt 包里的 F 开头的 Print 函数可以直接写入任何 io.Writer，包括文件。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">//</span><span class="err">带</span><span class="n">bufio</span><span class="err">缓存写入一个文件</span> 
+
+<span class="n">outputfile</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">OpenFile</span><span class="p">(</span><span class="s2">"/test/aaa.log"</span><span class="p">,</span><span class="n">os</span><span class="p">.</span><span class="n">O_WRONLY</span><span class="p">|</span><span class="n">os</span><span class="p">.</span><span class="n">O_CREATE</span><span class="p">,</span> <span class="m">0644</span><span class="p">)</span> 
+<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil{
+</span>	<span class="n">fmt</span><span class="p">.</span><span class="n">Fprintf</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Stderr</span><span class="p">,</span><span class="s2">"A error coccurred %s"</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+	<span class="n">return</span> 
+<span class="p">}</span>
+<span class="n">defer</span> <span class="n">outputfile</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span> 
+
+<span class="n">outputwrite</span> <span class="p">=</span> <span class="n">bufio</span><span class="p">.</span><span class="n">NewWriter</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span>
+
+<span class="n">for</span> <span class="n">i</span><span class="p">:=</span><span class="m">0</span><span class="p">;</span><span class="n">i</span><span class="p">&lt;</span><span class="m">10</span><span class="p">;</span><span class="n">i</span><span class="p">++{</span>
+	<span class="n">outputwrite</span><span class="p">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s2">"hello world!</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span> 
+<span class="p">}</span>
+
+<span class="n">outputwrite</span><span class="p">.</span><span class="n">Flush</span><span class="p">()</span> 
+
+
+<span class="p">//</span> <span class="err">不使用</span> <span class="n">fmt</span><span class="p">.</span><span class="n">FPrintf</span> <span class="err">函数，也不使用缓冲区，直接将内容写入文件：</span><span class="n">f</span><span class="p">.</span><span class="n">WriteString</span><span class="p">()</span>
+
+<span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="s2">"os"</span>
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Stdout</span><span class="p">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s2">"hello, world</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+	<span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">OpenFile</span><span class="p">(</span><span class="s2">"test"</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">O_CREATE</span><span class="p">|</span><span class="n">os</span><span class="p">.</span><span class="n">O_WRONLY</span><span class="p">,</span> <span class="m">0</span><span class="p">)</span>
+	<span class="n">defer</span> <span class="n">f</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="n">f</span><span class="p">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s2">"hello, world in a file</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="err">拷贝文件</span> <span class="n">io</span><span class="p">.</span><span class="n">Copy</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">(){</span>
+
+	<span class="n">CopyFile</span><span class="p">(</span><span class="s2">"target.txt"</span><span class="p">,</span><span class="s2">"source.txt"</span><span class="p">)</span> 
+	
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">CopyFile</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span><span class="n">src</span> <span class="k">string</span><span class="p">)(</span><span class="n">written</span> <span class="n">int64</span><span class="p">,</span><span class="n">err</span> <span class="n">error</span><span class="p">){</span>
+
+	<span class="n">srcfile</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> 
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">return</span> 
+	<span class="p">}</span>
+	
+	<span class="n">defer</span> <span class="n">srcfile</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span> 
+	
+	<span class="n">dstfile</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">OpenFile</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span><span class="n">os</span><span class="p">.</span><span class="n">O_CREATE</span><span class="p">|</span><span class="n">os</span><span class="p">.</span><span class="n">O_WRONLY</span><span class="p">,</span><span class="m">0644</span><span class="p">)</span> 
+	
+		<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">return</span> 
+	<span class="p">}</span>
+
+	<span class="n">defer</span> <span class="n">dstfile</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span> 
+	
+	<span class="n">return</span> <span class="n">io</span><span class="p">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">dstfile</span><span class="p">,</span><span class="n">srcfile</span><span class="p">)</span> 
+
+
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="ioioutil-包将整个文件的内容读到一个字符串里">io/ioutil 包将整个文件的内容读到一个字符串里</h3>
+
+<p><br /></p>
+
+<p>如果想将整个文件的内容读到一个字符串里，可以使用 io/ioutil 包里的 ioutil.ReadFile() 方法，该方法第一个返回值的类型是 []byte ，里面存放读取到的内容，第二个返回值是错误，如果没有错误发生，第二个返回值为 nil。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"io/ioutil"</span>
+	<span class="s2">"os"</span>
+<span class="p">)</span>
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">inputFile</span> <span class="p">:=</span> <span class="s2">"products.txt"</span>
+	<span class="n">outputFile</span> <span class="p">:=</span> <span class="s2">"products_copy.txt"</span>
+	<span class="n">buf</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">ioutil</span><span class="p">.</span><span class="n">ReadFile</span><span class="p">(</span><span class="n">inputFile</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Fprintf</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Stderr</span><span class="p">,</span> <span class="s2">"File Error: %s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="k">string</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span>
+	
+	<span class="n">err</span> <span class="p">=</span> <span class="n">ioutil</span><span class="p">.</span><span class="n">WriteFile</span><span class="p">(</span><span class="n">outputFile</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="m">0x644</span><span class="p">)</span>
+	
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">.</span> <span class="n">Error</span><span class="p">())</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="compress-包读取压缩文件">compress 包：读取压缩文件</h3>
+
+<p><br /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import "compress/gzip" 
+
+var inputReader *bufio.Reader
+var input string 
+var err error 
+
+func main(){
+
+	file, err:= os.Open("/tmp/aaa.log")
+	
+	if err!= nil {
+	
+		return 
+	}
+	defer file.Close() 
+	
+	fz,err:=gzip.NewReader(file)
+	if err!= nil {
+	
+		return 
+	}		
+	
+	inputReader = bufio.NewReader(fz) 
+	
+	
+	for { 
+	input,err = inputReader.ReadString('\n')
+	if err!=nil{
+		if err == io.EOF {
+		
+		fmt.Println("read finished")
+		} else{
+		fmt.Println(err)
+		return 
+		}
+	}
+	
+	fmt.Println(input)
+
+	}
+
+}
+</code></pre></div></div>
+
+<p>参考：</p>
+
+<p><a href="https://www.cnblogs.com/mafeng/p/7680451.html">https://www.cnblogs.com/mafeng/p/7680451.html</a></p>
+
+<p><a href="http://c.biancheng.net/view/4476.html">http://c.biancheng.net/view/4476.html</a></p>
+
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80%E5%8F%8D%E5%B0%84-reflection-%E7%AE%80%E8%BF%B0/" data-toggle="tooltip" data-placement="top" title="Go语言反射（reflection）简述">上一篇：  <span>Go语言反射（reflection）简述</span>
+            </a>
+        </li>
+        
+        
+        <li class="next">
+            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80json%E5%BA%8F%E5%88%97%E5%8C%96/" data-toggle="tooltip" data-placement="top" title="Go 语言json序列化">下一篇：  <span>Go 语言json序列化</span>
+            </a>
+        </li>
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>
