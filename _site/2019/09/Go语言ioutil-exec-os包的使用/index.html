@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go 语言io/ioutil,os,exec包使用</title>
+  <meta name="description" content="Go 语言socket读写总结">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go 语言io/ioutil,os,exec包使用">
+  <meta name="twitter:description" content="Go 语言socket读写总结">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go 语言io/ioutil,os,exec包使用">
+  <meta property="og:description" content="Go 语言socket读写总结">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80ioutil-exec-os%E5%8C%85%E7%9A%84%E4%BD%BF%E7%94%A8/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go 语言io/ioutil,os,exec包使用</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-09-18 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-09-18</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h1 id="go-语言socket读写总结">Go 语言socket读写总结</h1>
+
+<h2 id="字符串实现ioreader-的方法">字符串实现io.Reader 的方法：</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>s := strings.NewReader("Hello World!")
+ra, _ := ioutil.ReadAll(s)
+fmt.Printf("%s", ra)
+</code></pre></div></div>
+
+<h2 id="ioioutil包">io/ioutil包：</h2>
+
+<p>几个函数方法</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>名称</th>
+      <th>作用</th>
+      <th>备注</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ReadAll</td>
+      <td>读取数据，返回读到的字节 slice</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>ReadDir</td>
+      <td>读取一个目录，返回目录入口数组 []os.FileInfo,</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>ReadFile</td>
+      <td>读一个文件，返回文件内容（字节slice）</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>WriteFile</td>
+      <td>根据文件路径，写入字节slice</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>TempDir</td>
+      <td>在一个目录中创建指定前缀名的临时目录，返回新临时目录的路径</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>TempFile</td>
+      <td>在一个目录中创建指定前缀名的临时文件，返回 os.File</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>1) func ReadAll(r io.Reader) ([]byte, error)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>r := strings.NewReader("Go is a general-purpose language designed with systems programming in mind.")
+
+b, err := ioutil.ReadAll(r)
+if err != nil {
+	log.Fatal(err)
+}
+
+fmt.Printf("%s", b)
+
+/*output:
+Go is a general-purpose language designed with systems programming in mind.
+*/ 
+</code></pre></div></div>
+
+<p><strong>2) func ReadFile(filename string) ([]byte, error)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	ra, _ := ioutil.ReadFile("/tmp/win.ini")
+	fmt.Printf("%s", ra)
+}
+</code></pre></div></div>
+
+<p><strong>3) func WriteFile(filename string, data []byte, perm os.FileMode) error</strong></p>
+
+<p>// WriteFile 向文件 filename 中写入数据 data</p>
+
+<p>// 如果文件不存在，则以 perm 权限创建该文件</p>
+
+<p>// 如果文件存在，则先清空文件，然后再写入</p>
+
+<p>// 返回写入过程中遇到的任何错误</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	fn := "/tmp/Test.txt"
+	s := []byte("Hello World!")
+	ioutil.WriteFile(fn, s, os.ModeAppend)
+	rf, _ := ioutil.ReadFile(fn)
+	fmt.Printf("%s", rf)
+	// Hello World!
+}
+</code></pre></div></div>
+
+<p><strong>4) func ReadDir(dirname string) ([]os.FileInfo, error)</strong></p>
+
+<p>// ReadDir 读取目录 dirmane 中的所有目录和文件（不包括子目录）</p>
+
+<p>// 返回读取到的文件的信息列表和读取过程中遇到的任何错误</p>
+
+<p>// 返回的文件列表是经过排序的</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	rd, err := ioutil.ReadDir("C:\\Windows")
+	for _, fi := range rd {
+		fmt.Println("")
+		fmt.Println(fi.Name())
+		fmt.Println(fi.IsDir())
+		fmt.Println(fi.Size())
+		fmt.Println(fi.ModTime())
+		fmt.Println(fi.Mode())
+	}
+	fmt.Println("")
+	fmt.Println(err)
+}
+</code></pre></div></div>
+
+<p>示例：读取目录</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	rd, err := ioutil.ReadDir("/")
+	fmt.Println(err)
+	for _, fi := range rd {
+		if fi.IsDir() {
+			fmt.Printf("[%s]\n", fi.Name())
+
+		} else {
+			fmt.Println(fi.Name())
+		}
+	}
+}	
+</code></pre></div></div>
+
+<p><strong>5) ioutil.Discard 相当于/dev/null</strong></p>
+
+<p>var Discard io.Writer = devNull(0)</p>
+
+<p>Discard 是一个 io.Writer，对它进行的任何 Write 调用都将无条件成功。devNull优化的实现了ReadFrom，因此io.Copy到ioutil.Discard避免了不必要的工作，因此其一定会成功．但是ioutil.Discard不记录copy得到的数值．例子如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"io"</span>
+	<span class="s2">"io/ioutil"</span>
+	<span class="s2">"strings"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	
+
+	<span class="n">a</span> <span class="p">:=</span> <span class="n">strings</span><span class="p">.</span><span class="n">NewReader</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>
+	<span class="n">p</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">byte</span><span class="p">,</span> <span class="m">20</span><span class="p">)</span>
+	<span class="n">io</span><span class="p">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">ioutil</span><span class="p">.</span><span class="n">Discard</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+	<span class="n">ioutil</span><span class="p">.</span><span class="n">Discard</span><span class="p">.</span><span class="n">Write</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="err">　　　　　　</span><span class="p">//[</span><span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span> <span class="m">0</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>6) func TempFile(dir, prefix string) (f *os.File, err error)</strong></p>
+
+<p>// TempFile 在目录 dir 中创建一个临时文件并将其打开</p>
+
+<p>// 文件名以 prefix 为前缀</p>
+
+<p>// 返回创建的文件的对象和创建过程中遇到的任何错误</p>
+
+<p>// 如果 dir 为空，则在系统的临时目录中创建临时文件</p>
+
+<p>// 如果环境变量中没有设置系统临时目录，则在 /tmp 中创建临时文件</p>
+
+<p>// 调用者可以通过 f.Name() 方法获取临时文件的完整路径</p>
+
+<p>// 调用 TempFile 所创建的临时文件，应该由调用者自己移除</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	dn := "C:\\"
+	f, _ := ioutil.TempFile(dn, "Test")
+	fmt.Printf("%s", f.Name())
+}
+</code></pre></div></div>
+
+<p><strong>6) func TempDir(dir, prefix string) (name string, err error)</strong></p>
+
+<p>// TempDir 功能同 TempFile，只不过创建的是目录</p>
+
+<p>// 返回值也只返目录的完整路径</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	dn := "C:\\"
+	f, _ := ioutil.TempDir(dn, "Test")
+	fmt.Printf("%s", f)
+}
+
+// 完整的例子 
+
+func main() {
+// 创建临时目录
+dir, err := ioutil.TempDir("", "Test")
+if err != nil {
+	fmt.Println(err)
+}
+defer os.Remove(dir) // 用完删除
+fmt.Printf("%s\n", dir)
+
+// 创建临时文件
+f, err := ioutil.TempFile(dir, "Test")
+if err != nil {
+	fmt.Println(err)
+}
+defer os.Remove(f.Name()) // 用完删除
+fmt.Printf("%s\n", f.Name())
+}
+</code></pre></div></div>
+
+<p><br /></p>
+
+<p>参考：</p>
+
+<p><a href="https://www.cnblogs.com/msnsj/p/4242600.html">ioutil总结</a></p>
+
+<p><a href="https://blog.csdn.net/zf766045962/article/details/89243709">ioutil临时目录文件</a></p>
+
+<h2 id="bufio-总结">bufio 总结：</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>r = bufio.NewReader()
+
+buf:=[512]byte
+n,err:=r.Read(buf) 
+fmt.Println(buf[0:n]
+
+data,err:=r.ReadString('\n')
+fmt.Println(string(data))
+
+
+w = bufio.NewWriter() 
+w.WriteString("xxxxxxx\n") 
+w.Write([]byte("hello")) 
+</code></pre></div></div>
+
+<h2 id="io-总结">io 总结：</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>io.WriteString(w,"xxxxxx\n") 
+
+
+io.Copy(w,r) 
+</code></pre></div></div>
+
+<h1 id="golang语言中os包的学习与使用文件目录进程的操作">golang语言中os包的学习与使用(文件，目录，进程的操作)</h1>
+
+<h2 id="os-常用的函数">os 常用的函数</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span><span class="p">;</span>
+ 
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"os"</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"time"</span>
+	<span class="s2">"strings"</span>
+<span class="p">)</span>
+ 
+<span class="p">//</span><span class="n">os</span><span class="err">包中的一些常用函数</span>
+ 
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+ 
+	<span class="p">//</span><span class="err">获取主机名</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Hostname</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取当前目录</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Getwd</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取用户</span><span class="n">ID</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="nf">Getuid</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取有效用户</span><span class="n">ID</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Geteuid</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取组</span><span class="n">ID</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="nf">Getgid</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取有效组</span><span class="n">ID</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Getegid</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取进程</span><span class="n">ID</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Getpid</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取父进程</span><span class="n">ID</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Getppid</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">获取环境变量的值</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s2">"GOPATH"</span><span class="p">));</span>
+ 
+	<span class="p">//</span><span class="err">设置环境变量的值</span>
+	<span class="n">os</span><span class="p">.</span><span class="nf">Setenv</span><span class="p">(</span><span class="s2">"TEST"</span><span class="p">,</span> <span class="s2">"test"</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">改变当前工作目录</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Chdir</span><span class="p">(</span><span class="s2">"C:/"</span><span class="p">);</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Getwd</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">创建文件</span>
+	<span class="n">f1</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="s2">"./1.txt"</span><span class="p">);</span>
+	<span class="n">defer</span> <span class="n">f1</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+ 
+	<span class="p">//</span><span class="err">修改文件权限</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Chmod</span><span class="p">(</span><span class="s2">"./1.txt"</span><span class="p">,</span> <span class="m">0777</span><span class="p">);</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
+	<span class="p">}</span>
+ 
+	<span class="p">//</span><span class="err">修改文件所有者</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Chown</span><span class="p">(</span><span class="s2">"./1.txt"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
+	<span class="p">}</span>
+ 
+	<span class="p">//</span><span class="err">修改文件的访问时间和修改时间</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Chtimes</span><span class="p">(</span><span class="s2">"./1.txt"</span><span class="p">,</span> <span class="n">time</span><span class="p">.</span><span class="n">Now</span><span class="p">().</span><span class="n">Add</span><span class="p">(</span><span class="n">time</span><span class="p">.</span><span class="n">Hour</span><span class="p">),</span> <span class="n">time</span><span class="p">.</span><span class="n">Now</span><span class="p">().</span><span class="n">Add</span><span class="p">(</span><span class="n">time</span><span class="p">.</span><span class="n">Hour</span><span class="p">));</span>
+ 
+	<span class="p">//</span><span class="err">获取所有环境变量</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">strings</span><span class="p">.</span><span class="n">Join</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Environ</span><span class="p">(),</span> <span class="s2">"</span><span class="se">\r\n</span><span class="s2">"</span><span class="p">));</span>
+ 
+	<span class="p">//</span><span class="err">把字符串中带</span><span class="p">${</span><span class="n">var</span><span class="p">}</span><span class="err">或</span><span class="p">$</span><span class="n">var</span><span class="err">替换成指定指符串</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Expand</span><span class="p">(</span><span class="s2">"${1} ${2} ${3}"</span><span class="p">,</span> <span class="n">func</span><span class="p">(</span><span class="n">k</span> <span class="k">string</span><span class="p">)</span> <span class="k">string</span> <span class="p">{</span>
+		<span class="n">mapp</span> <span class="p">:=</span> <span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span><span class="p">{</span>
+			<span class="s2">"1"</span><span class="p">:</span> <span class="s2">"111"</span><span class="p">,</span>
+			<span class="s2">"2"</span><span class="p">:</span> <span class="s2">"222"</span><span class="p">,</span>
+			<span class="s2">"3"</span><span class="p">:</span> <span class="s2">"333"</span><span class="p">,</span>
+		<span class="p">};</span>
+		<span class="n">return</span> <span class="n">mapp</span><span class="p">[</span><span class="n">k</span><span class="p">];</span>
+	<span class="p">}));</span>
+ 
+	<span class="p">//</span><span class="err">创建目录</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Mkdir</span><span class="p">(</span><span class="s2">"abc"</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">ModePerm</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">创建多级目录</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">MkdirAll</span><span class="p">(</span><span class="s2">"abc/d/e/f"</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">ModePerm</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">删除文件或目录</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Remove</span><span class="p">(</span><span class="s2">"abc/d/e/f"</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">删除指定目录下所有文件</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">RemoveAll</span><span class="p">(</span><span class="s2">"abc"</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">重命名文件</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Rename</span><span class="p">(</span><span class="s2">"./2.txt"</span><span class="p">,</span> <span class="s2">"./2_new.txt"</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">判断是否为同一文件</span>
+	<span class="p">//</span><span class="n">unix</span><span class="err">下通过底层结构的设备和索引节点是否相同来判断</span>
+	<span class="p">//</span><span class="err">其他系统可能是通过文件绝对路径来判断</span>
+	<span class="n">fs1</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">f1</span><span class="p">.</span><span class="n">Stat</span><span class="p">();</span>
+	<span class="n">f2</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"./1.txt"</span><span class="p">);</span>
+	<span class="n">fs2</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">f2</span><span class="p">.</span><span class="n">Stat</span><span class="p">();</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">SameFile</span><span class="p">(</span><span class="n">fs1</span><span class="p">,</span> <span class="n">fs2</span><span class="p">));</span>
+ 
+	<span class="p">//</span><span class="err">返回临时目录</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">TempDir</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="文件的操作">文件的操作</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span><span class="p">;</span>
+ 
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"os"</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"strconv"</span>
+<span class="p">)</span>
+ 
+<span class="p">//</span><span class="n">os</span><span class="err">包中关于文件的操作函数</span>
+ 
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="p">//</span><span class="err">创建文件，返回一个文件指针</span>
+	<span class="n">f3</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Create</span><span class="p">(</span><span class="s2">"./3.txt"</span><span class="p">);</span>
+	<span class="n">defer</span> <span class="n">f3</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+ 
+	<span class="p">//</span><span class="err">以读写方式打开文件，如果不存在则创建文件，等同于上面</span><span class="n">os</span><span class="p">.</span><span class="n">Create</span>
+	<span class="n">f4</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">OpenFile</span><span class="p">(</span><span class="s2">"./4.txt"</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">O_RDWR</span><span class="p">|</span><span class="n">os</span><span class="p">.</span><span class="n">O_CREATE</span><span class="p">|</span><span class="n">os</span><span class="p">.</span><span class="n">O_TRUNC</span><span class="p">,</span> <span class="m">0666</span><span class="p">);</span>
+	<span class="n">defer</span> <span class="n">f4</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+ 
+	<span class="p">//</span><span class="err">打开文件，返回文件指针</span>
+	<span class="n">f1</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"./1.txt"</span><span class="p">);</span>
+	<span class="n">defer</span> <span class="n">f1</span><span class="p">.</span><span class="n">Close</span><span class="p">();</span>
+ 
+	<span class="p">//</span><span class="err">修改文件权限，类似</span><span class="n">os</span><span class="p">.</span><span class="n">chmod</span>
+	<span class="n">f1</span><span class="p">.</span><span class="n">Chmod</span><span class="p">(</span><span class="m">0777</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">修改文件所有者，类似</span><span class="n">os</span><span class="p">.</span><span class="n">chown</span>
+	<span class="n">f1</span><span class="p">.</span><span class="n">Chown</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">返回文件的句柄，通过</span><span class="n">NewFile</span><span class="err">创建文件需要文件句柄</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">f1</span><span class="p">.</span><span class="n">Fd</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">从文件中读取数据</span>
+	<span class="n">buf</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">byte</span><span class="p">,</span> <span class="m">128</span><span class="p">);</span>
+	<span class="p">//</span><span class="n">read</span><span class="err">每次读取数据到</span><span class="n">buf</span><span class="err">中</span>
+	<span class="n">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">f1</span><span class="p">.</span><span class="n">Read</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span> <span class="n">n</span> <span class="c1">!= 0; n, _ = f1.Read(buf) {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">buf</span><span class="p">[:</span><span class="n">n</span><span class="p">]));</span>
+	<span class="p">}</span>
+ 
+	<span class="p">//</span><span class="err">向文件中写入数据</span>
+	<span class="n">for</span> <span class="n">i</span> <span class="p">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">5</span><span class="p">;</span> <span class="n">i</span><span class="p">++</span> <span class="p">{</span>
+		<span class="n">f3</span><span class="p">.</span><span class="n">Write</span><span class="p">([]</span><span class="n">byte</span><span class="p">(</span><span class="s2">"写入数据"</span> <span class="p">+</span> <span class="n">strconv</span><span class="p">.</span><span class="n">Itoa</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">+</span> <span class="s2">"</span><span class="se">\r\n</span><span class="s2">"</span><span class="p">));</span>
+	<span class="p">}</span>
+ 
+	<span class="p">//</span><span class="err">返回一对关联的文件对象</span>
+	<span class="p">//</span><span class="err">从</span><span class="n">r</span><span class="err">中可以读取到从</span><span class="n">w</span><span class="err">写入的数据</span>
+	<span class="n">r</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Pipe</span><span class="p">();</span>
+	<span class="p">//</span><span class="err">向</span><span class="n">w</span><span class="err">中写入字符串</span>
+	<span class="n">w</span><span class="p">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s2">"写入w"</span><span class="p">);</span>
+	<span class="n">buf2</span> <span class="p">:=</span> <span class="n">make</span><span class="p">([]</span><span class="n">byte</span><span class="p">,</span> <span class="m">128</span><span class="p">);</span>
+	<span class="p">//</span><span class="err">从</span><span class="n">r</span><span class="err">中读取数据</span>
+	<span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">r</span><span class="p">.</span><span class="n">Read</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">buf2</span><span class="p">[:</span><span class="n">n</span><span class="p">]));</span>
+ 
+	<span class="p">//</span><span class="err">改变工作目录</span>
+	<span class="n">os</span><span class="p">.</span><span class="n">Mkdir</span><span class="p">(</span><span class="s2">"a"</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">ModePerm</span><span class="p">);</span>
+	<span class="n">dir</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">os</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"a"</span><span class="p">);</span>
+	<span class="p">//</span><span class="err">改变工作目录到</span><span class="n">dir</span><span class="err">，</span><span class="n">dir</span><span class="err">必须为一个目录</span>
+	<span class="n">dir</span><span class="p">.</span><span class="n">Chdir</span><span class="p">();</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">Getwd</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">读取目录的内容，返回一个</span><span class="n">FileInfo</span><span class="err">的</span><span class="n">slice</span>
+	<span class="p">//</span><span class="err">参数大于</span><span class="m">0</span><span class="err">，最多返回</span><span class="n">n</span><span class="err">个</span><span class="n">FileInfo</span>
+	<span class="p">//</span><span class="err">参数小于等于</span><span class="m">0</span><span class="err">，返回所有</span><span class="n">FileInfo</span>
+	<span class="n">fi</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">dir</span><span class="p">.</span><span class="n">Readdir</span><span class="p">(-</span><span class="m">1</span><span class="p">);</span>
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">fi</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">Name</span><span class="p">());</span>
+	<span class="p">}</span>
+ 
+	<span class="p">//</span><span class="err">读取目录中文件对象的名字</span>
+	<span class="n">names</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">dir</span><span class="p">.</span><span class="n">Readdirnames</span><span class="p">(-</span><span class="m">1</span><span class="p">);</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">names</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">获取文件的详细信息，返回</span><span class="n">FileInfo</span><span class="err">结构</span>
+	<span class="n">fi3</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">f3</span><span class="p">.</span><span class="n">Stat</span><span class="p">();</span>
+	<span class="p">//</span><span class="err">文件名</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">fi3</span><span class="p">.</span><span class="n">Name</span><span class="p">());</span>
+	<span class="p">//</span><span class="err">文件大小</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">fi3</span><span class="p">.</span><span class="n">Size</span><span class="p">());</span>
+	<span class="p">//</span><span class="err">文件权限</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">fi3</span><span class="p">.</span><span class="n">Mode</span><span class="p">());</span>
+	<span class="p">//</span><span class="err">文件修改时间</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">fi3</span><span class="p">.</span><span class="n">ModTime</span><span class="p">());</span>
+	<span class="p">//</span><span class="err">是否是目录</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">fi3</span><span class="p">.</span><span class="n">IsDir</span><span class="p">());</span>
+<span class="p">}</span>	
+</code></pre></div></div>
+
+<p>参考：</p>
+
+<p><a href="https://www.cnblogs.com/jkko123/category/991658.html">go语言一些模块的使用</a></p>
+
+<h1 id="golang语言中osexec包的学习与使用">golang语言中os/exec包的学习与使用</h1>
+
+<p><strong>1) func LookPath(file string) (string, error)</strong></p>
+
+<p>在环境变量PATH指定的目录中搜索可执行文件，如file中有斜杠，则只在当前目录搜索。</p>
+
+<p><strong>2) func Command(name string, arg …string) *Cmd</strong></p>
+
+<p>函数返回一个*Cmd，用于使用给出的参数执行name指定的程序。返回值只设定了Path和Args两个参数。</p>
+
+<p>如果name不含路径分隔符（如果不是相对路径），将使用LookPath获取完整路径（就是用默认的全局变量路径）；否则直接使用name。参数arg不应包含命令名。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cmd := exec.Command("go","version")
+fmt.Println(cmd.Args, cmd.Path)
+</code></pre></div></div>
+
+<p>注：在调用命令执行封装时，如果不提供相对路径，系统会使用LookPath获取完整路径；即这里可以给一个相对路径。</p>
+
+<p><strong>管道的使用:我们可以通过指定一个对象连接到对应的管道进行传输参数（stdinpipe）,获取输出（stdoutpipe）,获取错误（stderrpipe）</strong></p>
+
+<p><strong>3) func (c *Cmd) StdinPipe() (io.WriteCloser, error)　　//err 返回的是执行函数时的错误</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"os"</span>
+	<span class="s2">"os/exec"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">cmd</span> <span class="p">:=</span> <span class="n">exec</span><span class="p">.</span><span class="n">Command</span><span class="p">(</span><span class="s2">"cat"</span><span class="p">)</span>
+	<span class="n">stdin</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">cmd</span><span class="p">.</span><span class="n">StdinPipe</span><span class="p">()</span>       <span class="p">//</span><span class="err">指定</span><span class="n">stdin</span><span class="err">连接</span><span class="n">StdinPipe</span><span class="p">,</span><span class="err">然后操作</span><span class="n">stdin</span><span class="err">就实现了对</span><span class="n">command</span><span class="err">的参数传递</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="p">=</span> <span class="n">stdin</span><span class="p">.</span><span class="n">Write</span><span class="p">([]</span><span class="n">byte</span><span class="p">(</span><span class="s2">"tmp.txt"</span><span class="p">))</span>   <span class="p">//</span><span class="err">字节切片</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">stdin</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="n">cmd</span><span class="p">.</span><span class="n">Stdout</span> <span class="p">=</span> <span class="n">os</span><span class="p">.</span><span class="n">Stdout</span>     <span class="p">//</span><span class="err">终端标准输出</span><span class="n">tmp</span><span class="p">.</span><span class="n">txt</span>
+	<span class="n">cmd</span><span class="p">.</span><span class="n">Start</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>StdinPipe方法返回一个在命令Start后与命令标准输入关联的管道。Wait方法获知命令结束后会关闭这个管道。必要时调用者可以调用Close方法来强行关闭管道，例如命令在输入关闭后才会执行返回时需要显式关闭管道。</p>
+
+<p><strong>4) func (c *Cmd) StdoutPipe() (io.ReadCloser, error)　　　　//err 返回的是执行函数时的错误</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main() {
+	cmd := exec.Command("ls")
+	stdout, err := cmd.StdoutPipe()　　//指向cmd命令的stdout，然后就可以从stdout读出信息
+	cmd.Start()
+	content, err := ioutil.ReadAll(stdout)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(content))     //输出ls命令查看到的内容
+}
+</code></pre></div></div>
+
+<p>StdoutPipe方法返回一个在命令Start后与命令标准输出关联的管道。Wait方法获知命令结束后会关闭这个管道，一般不需要显式的关闭该管道。但是在从管道读取完全部数据之前调用Wait是错误的；同样使用StdoutPipe方法时调用Run函数也是错误的。</p>
+
+<p><strong>5) func (c *Cmd) StderrPipe() (io.ReadCloser, error)   //err 返回的是执行函数时的错误</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import (
+"fmt"
+"io/ioutil"
+"os/exec"
+)
+
+func main() {
+	c := exec.Command("mv", "hello")
+	i, err := c.StderrPipe()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		return
+	}
+	if err = c.Start(); err != nil {　　　　//表示命令正确执行了
+		fmt.Printf("Error: %s\n", err)
+	}
+	b, _ := ioutil.ReadAll(i)　　　　　　　　//读取命令执行的返回结果（命令执行结果的错误信息）
+	if err := c.Wait(); err != nil {
+		fmt.Printf("Error: %s\n", err) 　　//Error: exit status 1 mv: missing file argument Try `mv --help' for more information.
+	}                                                                 
+	fmt.Println(string(b))
+}
+</code></pre></div></div>
+
+<p>StderrPipe方法返回一个在命令Start后与命令标准错误输出关联的管道。Wait方法获知命令结束后会关闭这个管道，一般不需要显式的关闭该管道。但是在从管道读取完全部数据之前调用Wait是错误的；同样使用StderrPipe方法时调用Run函数也是错误的</p>
+
+<p><strong>6) func (c *Cmd) Run() error</strong></p>
+
+<p><strong>Run执行c包含的命令，并阻塞直到完成。</strong></p>
+
+<p>如果命令成功执行，stdin、stdout、stderr的转交没有问题，并且返回状态码为0，方法的返回值为nil【执行Run函数的返回状态，正确执行Run函数，并不代表正确执行了命令】；如果函数没有执行或者执行失败，会返回*ExitError类型的错误；否则返回的error可能是表示I/O问题。</p>
+
+<p>即：该命令只会执行且阻塞到执行结束，如果执行函数有错则返回报错信息，没错则返回nil，并不会返回执行结果。</p>
+
+<p><strong>7) func (c *Cmd) Start() error</strong></p>
+
+<p>Start开始执行c包含的命令，但并不会等待该命令完成即返回。Wait方法会返回命令的返回状态码并在命令返回后释放相关的资源。</p>
+
+<p><strong>8) func (c *Cmd) Wait() error</strong></p>
+
+<p>Wait会阻塞直到该命令执行完成，该命令必须是被Start方法开始执行的。</p>
+
+<p><strong>9) func (c *Cmd) Output() ([]byte, error)</strong></p>
+
+<p>执行命令并返回标准输出的切片。不用通过pipe方式获取命令的执行结果</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import (
+"fmt"
+"os/exec"
+)
+
+func main() {
+	c, err := exec.Command("date").Output()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(c)) //    Sat Jan 4 17:07:36 2014 这个是标准库里的例子
+}
+</code></pre></div></div>
+
+<p><strong>10) func (c *Cmd) CombinedOutput() ([]byte, error)</strong></p>
+
+<p><strong>执行命令并返回标准输出和错误输出合并的切片.</strong></p>
+
+<p>参考：</p>
+
+<p><a href="https://www.cnblogs.com/sunailong/p/7852216.html">https://www.cnblogs.com/sunailong/p/7852216.html</a></p>
+
+<p><a href="https://www.cnblogs.com/jkko123/p/7144938.html">https://www.cnblogs.com/jkko123/p/7144938.html</a></p>
+
+<p>一个具体的例子：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span><span class="p">;</span>
+ 
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"os/exec"</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"io/ioutil"</span>
+	<span class="s2">"bytes"</span>
+<span class="p">)</span>
+ 
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="p">//</span><span class="err">在环境变量</span><span class="n">path</span><span class="err">中查找可执行二进制文件</span>
+	<span class="p">//</span><span class="err">返回完整路径或者相对于当前目录的一个相对路径</span>
+	<span class="n">file</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">exec</span><span class="p">.</span><span class="n">LookPath</span><span class="p">(</span><span class="s2">"go"</span><span class="p">);</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">file</span><span class="p">);</span>
+ 
+	<span class="p">//</span><span class="err">返回一个</span><span class="n">cmd</span>
+	<span class="n">cmd</span> <span class="p">:=</span> <span class="n">exec</span><span class="p">.</span><span class="n">Command</span><span class="p">(</span><span class="s2">"go"</span><span class="p">,</span> <span class="s2">"version"</span><span class="p">);</span>
+	<span class="p">//</span><span class="err">执行命令，并返回标准输出和错误输出</span>
+	<span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">cmd</span><span class="p">.</span><span class="n">CombinedOutput</span><span class="p">();</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">out</span><span class="p">));</span>
+ 
+	<span class="p">//</span><span class="err">创建一个</span><span class="n">cmd</span>
+	<span class="n">cmd2</span> <span class="p">:=</span> <span class="n">exec</span><span class="p">.</span><span class="n">Command</span><span class="p">(</span><span class="s2">"ping"</span><span class="p">,</span> <span class="s2">"www.baidu.com"</span><span class="p">);</span>
+	<span class="n">buf</span> <span class="p">:=</span> <span class="n">bytes</span><span class="p">.</span><span class="n">Buffer</span><span class="p">{};</span>
+	<span class="p">//</span><span class="err">将</span><span class="n">cmd2</span><span class="err">的标准输出设置为</span><span class="n">buf</span>
+	<span class="n">cmd2</span><span class="p">.</span><span class="n">Stdout</span> <span class="p">=</span> <span class="p">&amp;</span><span class="n">buf</span><span class="p">;</span>
+	<span class="p">//</span><span class="err">运行命令，阻塞直到完成</span>
+	<span class="n">cmd2</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="k">String</span><span class="p">());</span>
+ 
+	<span class="p">//</span><span class="err">创建一个</span><span class="n">cmd</span>
+	<span class="n">cmd3</span> <span class="p">:=</span> <span class="n">exec</span><span class="p">.</span><span class="n">Command</span><span class="p">(</span><span class="s2">"ping"</span><span class="p">,</span> <span class="s2">"www.baidu.com"</span><span class="p">);</span>
+	<span class="p">//</span><span class="err">获取命令在</span><span class="n">start</span><span class="err">后标准输出管道</span>
+	<span class="n">out3</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">cmd3</span><span class="p">.</span><span class="n">StdoutPipe</span><span class="p">();</span>
+	<span class="p">//</span><span class="err">执行命令</span>
+	<span class="n">cmd3</span><span class="p">.</span><span class="n">Start</span><span class="p">();</span>
+	<span class="p">//</span><span class="err">读取管道中所有数据</span>
+	<span class="n">data3</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">ioutil</span><span class="p">.</span><span class="n">ReadAll</span><span class="p">(</span><span class="n">out3</span><span class="p">);</span>
+	<span class="p">//</span><span class="err">等待命令执行完成</span>
+	<span class="n">cmd3</span><span class="p">.</span><span class="nf">Wait</span><span class="p">();</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">data3</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>获取命令的返回码：</p>
+
+<p><a href="https://studygolang.com/articles/11128?fr=sidebar">https://studygolang.com/articles/11128?fr=sidebar</a></p>
+
+<p>python celery 定时任务添加：</p>
+
+<p>https://www.cnblogs.com/52forjie/p/9364136.html</p>
+
+<h3 id="输出文件到终端">输出文件到终端</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func print1(){
+
+	/*
+
+	延迟输出，最后统一输出结果
+
+	 */
+
+	//创建一个cmd
+	cmd3 := exec.Command("ping","-c","3", "www.baidu.com")
+	//获取命令在start后标准输出管道
+	out3, err := cmd3.StdoutPipe()
+
+	if err != nil {
+		fmt.Printf("stdoutpipe Error: %s\n", err)
+		return
+	}
+	//执行命令
+	if err = cmd3.Start(); err != nil { //表示命令正确执行了
+		fmt.Printf("startError: %s\n", err)
+	}
+	//读取管道中所有数据
+	data3, _ := ioutil.ReadAll(out3)
+	//等待命令执行完成
+	if err := cmd3.Wait(); err != nil {
+		fmt.Printf("waitError: %s\n", err)
+	}
+	fmt.Println(string(data3))
+
+}
+
+
+
+func print2(){
+	/*
+
+	实时的输出
+
+
+	 */
+
+	//创建一个cmd
+	cmd3 := exec.Command("ping","-c","3", "www.google.com")
+	//获取命令在start后标准输出管道
+	//out3, err := cmd3.StdoutPipe()
+
+	cmd3.Stdout = os.Stdout
+	cmd3.Stderr = os.Stderr
+
+
+	//执行命令
+	if err := cmd3.Start(); err != nil { //表示命令正确执行了
+		fmt.Printf("startError: %s\n", err)
+	}
+
+	if err := cmd3.Wait(); err != nil {
+		fmt.Printf("waitError: %s\n", err)
+	}
+
+
+   //https://blog.csdn.net/zhuxinquan61/article/details/89716301
+
+}
+</code></pre></div></div>
+
+<p>实时输出exec结果到文件或终端:</p>
+
+<p><a href="https://blog.csdn.net/zhuxinquan61/article/details/89716301">https://blog.csdn.net/zhuxinquan61/article/details/89716301</a></p>
+
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" data-toggle="tooltip" data-placement="top" title="Go 语言socket编程">上一篇：  <span>Go 语言socket编程</span>
+            </a>
+        </li>
+        
+        
+        <li class="next">
+            <a href="/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8redis/" data-toggle="tooltip" data-placement="top" title="Go语言使用redis/mysql数据库">下一篇：  <span>Go语言使用redis/mysql数据库</span>
+            </a>
+        </li>
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>

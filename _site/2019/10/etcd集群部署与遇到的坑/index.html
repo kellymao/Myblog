@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>etcd集群部署与遇到的坑(转)</title>
+  <meta name="description" content="etcd集群部署与遇到的坑(转)">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="etcd集群部署与遇到的坑(转)">
+  <meta name="twitter:description" content="etcd集群部署与遇到的坑(转)">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="etcd集群部署与遇到的坑(转)">
+  <meta property="og:description" content="etcd集群部署与遇到的坑(转)">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/10/etcd%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2%E4%B8%8E%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">etcd集群部署与遇到的坑(转)</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-10-14 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-10-14</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="etcd集群部署与遇到的坑转">etcd集群部署与遇到的坑(转)</h2>
+
+<p>原文 https://www.cnblogs.com/breg/p/5728237.html</p>
+
+<p>在k8s集群中使用了etcd作为数据中心，在实际操作中遇到了一些坑。今天记录一下，为了以后更好操作。</p>
+
+<p><strong>ETCD参数说明</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>—data-dir 指定节点的数据存储目录，这些数据包括节点ID，集群ID，集群初始化配置，Snapshot文件，若未指定—wal-dir，还会存储WAL文件；
+—wal-dir 指定节点的was文件的存储目录，若指定了该参数，wal文件会和其他数据文件分开存储。
+—name 节点名称
+—initial-advertise-peer-urls 告知集群其他节点url.
+— listen-peer-urls 监听URL，用于与其他节点通讯
+— advertise-client-urls 告知客户端url, 也就是服务的url
+— initial-cluster-token 集群的ID
+— initial-cluster 集群中所有节点
+</code></pre></div></div>
+
+<p><strong>节点迁移</strong></p>
+
+<p>在生产环境中，不可避免遇到机器硬件故障。当遇到硬件故障发生的时候，我们需要快速恢复节点。ETCD集群可以做到在不丢失数据的，并且不改变节点ID的情况下，迁移节点。
+具体办法是：</p>
+
+<p>1）停止待迁移节点上的etc进程；</p>
+
+<p>2）将数据目录打包复制到新的节点；</p>
+
+<p>3）更新该节点对应集群中peer url，让其指向新的节点；</p>
+
+<p>4）使用相同的配置，在新的节点上启动etcd进程</p>
+
+<p><strong>etcd配置</strong></p>
+
+<p>node1</p>
+
+<p>编辑etcd启动脚本/usr/local/etcd/start.sh</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/local/etcd/etcd -name niub1 -debug \
+-initial-advertise-peer-urls http://niub-etcd-1:2380 \
+-listen-peer-urls http://niub-etcd-1:2380 \
+-listen-client-urls http://niub-etcd-1:2379,http://127.0.0.1:2379 \
+-advertise-client-urls http://niub-etcd-1:2379 \
+-initial-cluster-token etcd-cluster-1 \
+-initial-cluster niub1=http://niub-etcd-1:2380,niub2=http://niub-etcd-2:2380,niub3=http://niub-etcd-3:2380 \
+-initial-cluster-state new  &gt;&gt; /niub/etcd_log/etcd.log 2&gt;&amp;1 &amp;
+</code></pre></div></div>
+
+<p>node2</p>
+
+<p>编辑etcd启动脚本/usr/local/etcd/start.sh</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/local/etcd/etcd -name niub2 -debug \
+-initial-advertise-peer-urls http://niub-etcd-2:2380 \
+-listen-peer-urls http://niub-etcd-2:2380 \
+-listen-client-urls http://niub-etcd-2:2379,http://127.0.0.1:2379 \
+-advertise-client-urls http://niub-etcd-2:2379 \
+-initial-cluster-token etcd-cluster-1 \
+-initial-cluster niub1=http://niub-etcd-1:2380,niub2=http://niub-etcd-2:2380,niub3=http://niub-etcd-3:2380 \
+-initial-cluster-state new  &gt;&gt; /niub/etcd_log/etcd.log 2&gt;&amp;1 &amp;
+</code></pre></div></div>
+
+<p>node3</p>
+
+<p>编辑etcd启动脚本/usr/local/etcd/start.sh</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/local/etcd/etcd -name niub3 -debug \
+-initial-advertise-peer-urls http://niub-etcd-3:2380 \
+-listen-peer-urls http://niub-etcd-3:2380 \
+-listen-client-urls http://niub-etcd-3:2379,http://127.0.0.1:2379 \
+-advertise-client-urls http://niub-etcd-3:2379 \
+-initial-cluster-token etcd-cluster-1 \
+-initial-cluster niub1=http://niub-etcd-1:2380,niub2=http://niub-etcd-2:2380,niub3=http://niub-etcd-3:2380 \
+-initial-cluster-state new  &gt;&gt; /niub/etcd_log/etcd.log 2&gt;&amp;1 &amp;
+</code></pre></div></div>
+
+<p>防火墙</p>
+
+<p>在这3台node服务器开放2379、2380端口，命令：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 2379 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 2380 -j ACCEPT
+</code></pre></div></div>
+
+<p>haproxy配置</p>
+
+<p>haproxy配置过程略 编辑/etc/haproxy/haproxy.cfg文件，增加：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frontend etcd
+	bind 10.10.0.14:2379
+	mode tcp
+	option tcplog
+	default_backend etcd
+	log 127.0.0.1 local3
+	backend etcd
+	balance roundrobin
+	fullconn 1024
+	server etcd1 10.10.0.11:2379 check port 2379 inter 300 fall 3
+	server etcd2 10.10.0.12:2379 check port 2379 inter 300 fall 3
+	server etcd3 10.10.0.13:2379 check port 2379 inter 300 fall 3
+</code></pre></div></div>
+
+<p><strong>检查etcd服务运行状态</strong></p>
+
+<p>使用curl访问：</p>
+
+<p>curl http://10.10.0.14:2379/v2/members</p>
+
+<p>返回以下结果为正常（3个节点）：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "members": [
+	{
+	  "id": "1f890e0c67371d24",
+	  "name": "niub1",
+	  "peerURLs": [
+		"http://niub-etcd-1:2380"
+	  ],
+	  "clientURLs": [
+		"http://niub-etcd-1:2379"
+	  ]
+	},
+	{
+	  "id": "b952ccccefdd8a93",
+	  "name": "niub3",
+	  "peerURLs": [
+		"http://niub-etcd-3:2380"
+	  ],
+	  "clientURLs": [
+		"http://niub-etcd-3:2379"
+	  ]
+	},
+	{
+	  "id": "d6dbdb24d5bfc20f",
+	  "name": "niub2",
+	  "peerURLs": [
+		"http://niub-etcd-2:2380"
+	  ],
+	  "clientURLs": [
+		"http://niub-etcd-2:2379"
+	  ]
+	}
+  ]
+}
+</code></pre></div></div>
+
+<p><strong>etcd备份</strong></p>
+
+<p>使用etcd自带命令etcdctl进行etc备份，脚本如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="nv">date_time</span><span class="o">=</span><span class="sb">`</span><span class="nb">date</span> +%Y%m%d<span class="sb">`</span>
+etcdctl backup <span class="nt">--data-dir</span> /usr/local/etcd/niub3.etcd/ <span class="nt">--backup-dir</span> /niub/etcd_backup/<span class="k">${</span><span class="nv">date_time</span><span class="k">}</span>
+
+find /niub/etcd_backup/ <span class="nt">-ctime</span> +7 <span class="nt">-exec</span> <span class="nb">rm</span> <span class="nt">-r</span> <span class="o">{}</span> <span class="se">\;</span>
+</code></pre></div></div>
+
+<p><strong>etcdctl操作</strong></p>
+
+<p>更新一个节点</p>
+
+<p>如果你想更新一个节点的 IP(peerURLS)，首先你需要知道那个节点的 ID。你可以列出所有节点，找出对应节点的 ID。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ etcdctl member list
+6e3bd23ae5f1eae0: name=node2 peerURLs=http://localhost:23802 clientURLs=http://127.0.0.1:23792
+924e2e83e93f2560: name=node3 peerURLs=http://localhost:23803 clientURLs=http://127.0.0.1:23793
+a8266ecf031671f3: name=node1 peerURLs=http://localhost:23801 clientURLs=http://127.0.0.1:23791
+在本例中，我们假设要更新 ID 为 a8266ecf031671f3 的节点的 peerURLs 为：http://10.0.1.10:2380
+
+$ etcdctl member update a8266ecf031671f3 http://10.0.1.10:2380
+Updated member with ID a8266ecf031671f3 in cluster
+</code></pre></div></div>
+
+<p>删除一个节点</p>
+
+<p>假设我们要删除 ID 为 a8266ecf031671f3 的节点</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ etcdctl member remove a8266ecf031671f3
+Removed member a8266ecf031671f3 from cluster
+</code></pre></div></div>
+
+<p>执行完后，目标节点会自动停止服务，并且打印一行日志：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcd: this member has been permanently removed from the cluster. Exiting.
+</code></pre></div></div>
+
+<p>如果删除的是 leader 节点，则需要耗费额外的时间重新选举 leader。</p>
+
+<p>增加一个新的节点</p>
+
+<p>增加一个新的节点分为两步：</p>
+
+<p>通过 etcdctl 或对应的 API 注册新节点</p>
+
+<p>使用恰当的参数启动新节点</p>
+
+<p>先看第一步，假设我们要新加的节点取名为 infra3, peerURLs 是 http://10.0.1.13:2380</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ etcdctl member add infra3 http://10.0.1.13:2380
+added member 9bf1b35fc7761a23 to cluster
+
+ETCD_NAME="infra3"
+ETCD_INITIAL_CLUSTER="infra0=http://10.0.1.10:2380,infra1=http://10.0.1.11:2380,infra2=http://10.0.1.12:2380,infra3=http://10.0.1.13:2380"
+ETCD_INITIAL_CLUSTER_STATE=existing
+</code></pre></div></div>
+
+<p>etcdctl 在注册完新节点后，会返回一段提示，包含3个环境变量。然后在第二部启动新节点的时候，带上这3个环境变量即可。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export ETCD_NAME="infra3"
+$ export ETCD_INITIAL_CLUSTER="infra0=http://10.0.1.10:2380,infra1=http://10.0.1.11:2380,infra2=http://10.0.1.12:2380,infra3=http://10.0.1.13:2380"
+$ export ETCD_INITIAL_CLUSTER_STATE=existing
+$ etcd -listen-client-urls http://10.0.1.13:2379 -advertise-client-urls http://10.0.1.13:2379  -listen-peer-urls http://10.0.1.13:2380 -initial-advertise-peer-urls http://10.0.1.13:2380 -data-dir %data_dir%
+这样，新节点就会运行起来并且加入到已有的集群中了。
+</code></pre></div></div>
+
+<p>值得注意的是，如果原先的集群只有1个节点，在新节点成功启动之前，新集群并不能正确的形成。因为原先的单节点集群无法完成leader的选举。</p>
+
+<p>直到新节点启动完，和原先的节点建立连接以后，新集群才能正确形成。</p>
+
+<p><strong>服务故障恢复</strong></p>
+
+<p>在使用etcd集群的过程中，有时会出现少量主机故障，这时我们需要对集群进行维护。然而，在现实情况下，还可能遇到由于严重的设备 或网络的故障，导致超过半数的节点无法正常工作。</p>
+
+<p>在etcd集群无法提供正常的服务，我们需要用到一些备份和数据恢复的手段。etcd背后的raft，保证了集群的数据的一致性与稳定性。所以我们对etcd的恢复，更多的是恢复etcd的节点服务，并还原用户数据。</p>
+
+<p>首先，从剩余的正常节点中选择一个正常的成员节点， 使用 etcdctl backup 命令备份etcd数据。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./etcdctl backup --data-dir /var/lib/etcd -backup-dir /tmp/etcd_backup
+$ tar -zcxf backup.etcd.tar.gz /tmp/etcd_backup
+</code></pre></div></div>
+
+<p>这个命令会将节点中的用户数据全部写入到指定的备份目录中，但是节点ID,集群ID等信息将会丢失， 并在恢复到目的节点时被重新。这样主要是防止原先的节点意外重新加入新的节点集群而导致数据混乱。</p>
+
+<p>然后将Etcd数据恢复到新的集群的任意一个节点上， 使用 –force-new-cluster 参数启动Etcd服务。这个参数会重置集群ID和集群的所有成员信息，其中节点的监听地址会被重置为localhost:2379, 表示集群中只有一个节点。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ tar -zxvf backup.etcd.tar.gz -C /var/lib/etcd
+$ etcd --data-dir=/var/lib/etcd --force-new-cluster ...
+</code></pre></div></div>
+
+<p>启动完成单节点的etcd,可以先对数据的完整性进行验证， 确认无误后再通过Etcd API修改节点的监听地址，让它监听节点的外部IP地址，为增加其他节点做准备。例如：</p>
+
+<p>用etcd命令找到当前节点的ID。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ etcdctl member list 
+
+98f0c6bf64240842: name=cd-2 peerURLs=http://127.0.0.1:2580 clientURLs=http://127.0.0.1:2579
+</code></pre></div></div>
+
+<p>由于etcdctl不具备修改成员节点参数的功能， 下面的操作要使用API来完成。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ curl http://127.0.0.1:2579/v2/members/98f0c6bf64240842 -XPUT \
+ -H "Content-Type:application/json" -d '{"peerURLs":["http://127.0.0.1:2580"]}'
+</code></pre></div></div>
+
+<p>注意，在Etcd文档中， 建议首先将集群恢复到一个临时的目录中，从临时目录启动etcd，验证新的数据正确完整后，停止etcd，在将数据恢复到正常的目录中。</p>
+
+<p>最后，在完成第一个成员节点的启动后，可以通过集群扩展的方法使用 etcdctl member add 命令添加其他成员节点进来。</p>
+
+<p><strong>扩展etcd集群</strong></p>
+
+<p>在集群中的任何一台etcd节点上执行命令，将新节点注册到集群：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl http://127.0.0.1:2379/v2/members -XPOST -H "Content-Type: application/json" -d '{"peerURLs": ["http://192.168.73.172:2380"]}'
+</code></pre></div></div>
+
+<p>在新节点上启动etcd容器，注意-initial-cluster-state参数为existing</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/usr/local/etcd/etcd \
+-name etcd03 \
+-advertise-client-urls http://192.168.73.150:2379,http://192.168.73.150:4001 \
+-listen-client-urls http://0.0.0.0:2379 \
+-initial-advertise-peer-urls http://192.168.73.150:2380 \
+-listen-peer-urls http://0.0.0.0:2380 \
+-initial-cluster-token etcd-cluster \
+-initial-cluster "etcd01=http://192.168.73.140:2380,etcd02=http://192.168.73.137:2380,etcd03=http://192.168.73.150:2380" \
+-initial-cluster-state existing
+</code></pre></div></div>
+
+<p>任意节点执行健康检查：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@docker01 ~]# etcdctl cluster-health
+member 2bd5fcc327f74dd5 is healthy: got healthy result from http://192.168.73.140:2379
+member c8a9cac165026b12 is healthy: got healthy result from http://192.168.73.137:2379
+cluster is healthy
+</code></pre></div></div>
+
+<p><strong>Etcd数据迁移</strong></p>
+
+<p>数据迁移</p>
+
+<p>在 gzns-inf-platform53.gzns.baidu.com 机器上运行着一个 etcd 服务器，其 data-dir 为 /var/lib/etcd/。我们要以 /var/lib/etcd 中的数据为基础，搭建一个包含三个节点的高可用的 etcd 集群，三个节点的主机名分别为：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gzns-inf-platform53.gzns.baidu.com
+gzns-inf-platform56.gzns.baidu.com
+gzns-inf-platform60.gzns.baidu.com
+</code></pre></div></div>
+
+<p>初始化一个新的集群</p>
+
+<p>我们先分别在上述三个节点上创建 /home/work/etcd/data-dir/ 文件夹当作 etcd 集群每个节点的数据存放目录。然后以 gzns-inf-platform60.gzns.baidu.com 节点为起点创建一个单节点的 etcd 集群，启动脚本 force-start-etcd.sh 如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># Don't start it unless etcd cluster has a heavily crash !</span>
+
+../bin/etcd <span class="nt">--name</span> etcd2 <span class="nt">--data-dir</span> /home/work/etcd/data-dir <span class="nt">--advertise-client-urls</span> http://gzns-inf-platform60.gzns.baidu.com:2379,http://gzns-inf-platform60.gzns.baidu.com:4001 <span class="nt">--listen-client-urls</span> http://0.0.0.0:2379,http://0.0.0.0:4001 <span class="nt">--initial-advertise-peer-urls</span> http://gzns-inf-platform60.gzns.baidu.com:2380 <span class="nt">--listen-peer-urls</span> http://0.0.0.0:2380 <span class="nt">--initial-cluster-token</span> etcd-cluster-1 <span class="nt">--initial-cluster</span> <span class="nv">etcd2</span><span class="o">=</span>http://gzns-inf-platform60.gzns.baidu.com:2380 <span class="nt">--force-new-cluster</span> <span class="o">&gt;</span> ./log/etcd.log 2&gt;&amp;1
+这一步的 <span class="nt">--force-new-cluster</span> 很重要，可能是为了抹除旧 etcd 的一些属性信息，从而能成功的创建一个单节点 etcd 的集群。
+</code></pre></div></div>
+
+<p>这时候通过</p>
+
+<p>etcdctl member list</p>
+
+<p>查看 peerURLs 指向的是不是 http://gzns-inf-platform60.gzns.baidu.com:2380 ? 如果不是，需要更新这个 etcd 的 peerURLs 的指向，否则这样在加入新的节点时会失败的。</p>
+
+<p>我们手动更新这个 etcd 的 peerURLs 指向</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl member update ce2a822cea30bfca http://gzns-inf-platform60.gzns.baidu.com:2380
+</code></pre></div></div>
+
+<p>添加etcd1成员</p>
+
+<p>然后添加 gzns-inf-platform56.gzns.baidu.com 节点上的 etcd1 成员</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl member add etcd1 http://gzns-inf-platform56.gzns.baidu.com:2380
+
+注意要先添加 etcd1 成员后，再在 gzns-inf-platform56.gzns 机器上启动这个 etcd1 成员
+</code></pre></div></div>
+
+<p>这时候我们登陆上 gzns-inf-platform56.gzns.baidu.com 机器上启动这个 etcd1 实例，启动脚本 force-start-etcd.sh 如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># Don't start it unless etcd cluster has a heavily crash !</span>
+
+../bin/etcd <span class="nt">--name</span> etcd1 <span class="nt">--data-dir</span> /home/work/etcd/data-dir <span class="nt">--advertise-client-urls</span> http://gzns-inf-platform56.gzns.baidu.com:2379,http://gzns-inf-platform56.gzns.baidu.com:4001 <span class="nt">--listen-client-urls</span> http://0.0.0.0:2379,http://0.0.0.0:4001 <span class="nt">--initial-advertise-peer-urls</span> http://gzns-inf-platform56.gzns.baidu.com:2380 <span class="nt">--listen-peer-urls</span> http://0.0.0.0:2380 <span class="nt">--initial-cluster-token</span> etcd-cluster-1 <span class="nt">--initial-cluster</span> <span class="nv">etcd2</span><span class="o">=</span>http://gzns-inf-platform60.gzns.baidu.com:2380,etcd1<span class="o">=</span>http://gzns-inf-platform56.gzns.baidu.com:2380 <span class="nt">--initial-cluster-state</span> existing <span class="o">&gt;</span> ./log/etcd.log 2&gt;&amp;1
+</code></pre></div></div>
+
+<p>注意在这个节点上我们先把 data-dir 文件夹中的数据删除（如果有内容的情况下），然后设置 –initial-cluster和 –initial-cluster-state。</p>
+
+<p>添加 etcd0 成员</p>
+
+<p>这时候我们可以通过</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl member list
+</code></pre></div></div>
+
+<p>观察到我们新加入的节点了，然后我们再以类似的步骤添加第三个节点 gzns-inf-platform53.gzns.baidu.com上 的 etcd0 实例</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl member add etcd0 http://gzns-inf-platform53.gzns.baidu.com:2380
+</code></pre></div></div>
+
+<p>然后登陆到 gzns-inf-platform53.gzns.baidu.com 机器上启动 etcd0 这个实例，启动脚本 force-start-etcd.sh 如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># Don't start it unless etcd cluster has a heavily crash !</span>
+
+../bin/etcd <span class="nt">--name</span> etcd0 <span class="nt">--data-dir</span> /home/work/etcd/data-dir <span class="nt">--advertise-client-urls</span> http://gzns-inf-platform53.gzns.baidu.com:2379,http://gzns-inf-platform53.gzns.baidu.com:4001 <span class="nt">--listen-client-urls</span> http://0.0.0.0:2379,http://0.0.0.0:4001 <span class="nt">--initial-advertise-peer-urls</span> http://gzns-inf-platform53.gzns.baidu.com:2380 <span class="nt">--listen-peer-urls</span> http://0.0.0.0:2380 <span class="nt">--initial-cluster-token</span> etcd-cluster-1 <span class="nt">--initial-cluster</span> <span class="nv">etcd2</span><span class="o">=</span>http://gzns-inf-platform60.gzns.baidu.com:2380,etcd1<span class="o">=</span>http://gzns-inf-platform56.gzns.baidu.com:2380,etcd0<span class="o">=</span>http://gzns-inf-platform53.gzns.baidu.com:2380 <span class="nt">--initial-cluster-state</span> existing <span class="o">&gt;</span> ./log/etcd.log 2&gt;&amp;1
+</code></pre></div></div>
+
+<p>过程同加入 etcd1 的过程相似，这样我们就可以把单节点的 etcd 数据迁移到一个包含三个 etcd 实例组成的集群上了。</p>
+
+<p>大体思路</p>
+
+<p>先通过 –force-new-cluster 强行拉起一个 etcd 集群，抹除了原有 data-dir 中原有集群的属性信息（内部猜测），然后通过加入新成员的方式扩展这个集群到指定的数目。</p>
+
+<p>高可用etcd集群方式（可选择）</p>
+
+<p>上面数据迁移的过程一般是在紧急的状态下才会进行的操作，这时候可能 etcd 已经停掉了，或者节点不可用了。在一般情况下如何搭建一个高可用的 etcd 集群呢，目前采用的方法是用 supervise 来监控每个节点的 etcd 进程。</p>
+
+<p>在数据迁移的过程中，我们已经搭建好了一个包含三个节点的 etcd 集群了，这时候我们对其做一些改变，使用supervise 重新拉起这些进程。</p>
+
+<p>首先登陆到 gzns-inf-platform60.gzns.baidu.com 节点上，kill 掉 etcd 进程，编写 etcd 的启动脚本 start-etcd.sh，其中 start-etcd.sh 的内容如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+../bin/etcd <span class="nt">--name</span> etcd2 <span class="nt">--data-dir</span> /home/work/etcd/data-dir <span class="nt">--advertise-client-urls</span> http://gzns-inf-platform60.gzns.baidu.com:2379,http://gzns-inf-platform60.gzns.baidu.com:4001 <span class="nt">--listen-client-urls</span> http://0.0.0.0:2379,http://0.0.0.0:4001 <span class="nt">--initial-advertise-peer-urls</span> http://gzns-inf-platform60.gzns.baidu.com:2380 <span class="nt">--listen-peer-urls</span> http://0.0.0.0:2380 <span class="nt">--initial-cluster-token</span> etcd-cluster-1 <span class="nt">--initial-cluster</span> <span class="nv">etcd2</span><span class="o">=</span>http://gzns-inf-platform60.gzns.baidu.com:2380,etcd1<span class="o">=</span>http://gzns-inf-platform56.gzns.baidu.com:2380,etcd0<span class="o">=</span>http://gzns-inf-platform53.gzns.baidu.com:2380 <span class="nt">--initial-cluster-state</span> existing <span class="o">&gt;</span> ./log/etcd.log 2&gt;&amp;1
+</code></pre></div></div>
+
+<p>然后使用 supervise 执行 start-etcd.sh 这个脚本，使用 supervise 启动 start-etcd.sh 的启动脚本 etcd_control 如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$# </span><span class="nt">-ne</span> 1 <span class="o">]</span><span class="p">;</span> <span class="k">then
+	</span><span class="nb">echo</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">: start|stop"</span>
+<span class="k">fi
+
+
+</span><span class="nv">work_path</span><span class="o">=</span><span class="sb">`</span><span class="nb">dirname</span> <span class="nv">$0</span><span class="sb">`</span>
+<span class="nb">cd</span> <span class="k">${</span><span class="nv">work_path</span><span class="k">}</span>
+<span class="nv">work_path</span><span class="o">=</span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>
+
+<span class="nv">supervise</span><span class="o">=</span><span class="k">${</span><span class="nv">work_path</span><span class="k">}</span>/supervise/bin/supervise64.etcd
+<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="k">${</span><span class="nv">work_path</span><span class="k">}</span>/supervise/status/etcd
+
+
+<span class="k">case</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="k">in
+</span>start<span class="p">)</span> 
+	killall etcd supervise64.etcd
+	<span class="k">${</span><span class="nv">supervise</span><span class="k">}</span> <span class="nt">-f</span> <span class="s2">"sh ./start-etcd.sh"</span> <span class="se">\</span>
+		<span class="nt">-F</span> <span class="k">${</span><span class="nv">work_path</span><span class="k">}</span>/supervise/conf/supervise.conf  <span class="se">\</span>
+		<span class="nt">-p</span>  <span class="k">${</span><span class="nv">work_path</span><span class="k">}</span>/supervise/status/etcd
+	<span class="nb">echo</span> <span class="s2">"START etcd daemon ok!"</span>
+<span class="p">;;</span>
+stop<span class="p">)</span>
+	killall etcd supervise64.etcd
+	<span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> <span class="nt">-ne</span> 0 <span class="o">]</span> 
+	<span class="k">then
+		</span><span class="nb">echo</span> <span class="s2">"STOP etcd daemon failed!"</span>
+		<span class="nb">exit </span>1
+	<span class="k">fi  
+	</span><span class="nb">echo</span> <span class="s2">"STOP etcd daemon ok!"</span>
+
+	这里为什么不直接用 supervise 执行 etcd 这个命令呢，反而以一个 start-etcd.sh 脚本的形式启动这个 etcd 呢？原因在于我们需要将 etcd 的输出信息重定向到文件中，
+</code></pre></div></div>
+
+<p>如果直接在 supervise 的 command 进行重定向，将发生错误。</p>
+
+<p>分别登陆到以下两台机器</p>
+
+<p>gzns-inf-platform56.gzns.baidu.com</p>
+
+<p>gzns-inf-platform53.gzns.baidu.com</p>
+
+<p>上进行同样的操作，注意要针对每个节点的不同修改对应的etcd name 和 peerURLs 等。</p>
+
+<p><strong>常见问题</strong></p>
+
+<p>1、etcd 读取已有的 data-dir 数据而启动失败，常常表现为cluster id not match什么的</p>
+
+<p>可能原因是新启动的 etcd 属性与之前的不同，可以尝 –force-new-cluster 选项的形式启动一个新的集群</p>
+
+<p>2、etcd 集群搭建完成后，通过 kubectl get pods 等一些操作发生错误的情况</p>
+
+<p>目前解决办法是重启一下 apiserver 进程</p>
+
+<p>3、还是 etcd启动失败的错误，大多数情况下都是与data-dir 有关系，data-dir 中记录的信息与 etcd启动的选项所标识的信息不太匹配造成的</p>
+
+<p>如果能通过修改启动参数解决这类错误就最好不过的了，非常情况下的解决办法：</p>
+
+<p>一种解决办法是删除data-dir文件</p>
+
+<p>一种方法是复制其他节点的data-dir中的内容，以此为基础上以 –force-new-cluster 的形式强行拉起一个，然后以添加新成员的方式恢复这个集群，这是目前的几种解决办法</p>
+
+<p>转自：</p>
+
+<p><a href="https://www.cnblogs.com/devilwind/p/8880686.html">https://www.cnblogs.com/devilwind/p/8880686.html</a></p>
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/10/etcd%E5%AE%89%E8%A3%85/" data-toggle="tooltip" data-placement="top" title="etcd 集群部署（centos7）">上一篇：  <span>etcd 集群部署（centos7）</span>
+            </a>
+        </li>
+        
+        
+        <li class="next">
+            <a href="/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8etcd%E5%BA%93/" data-toggle="tooltip" data-placement="top" title="Go语言使用etcd库">下一篇：  <span>Go语言使用etcd库</span>
+            </a>
+        </li>
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>

@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go语言使用mysql数据库</title>
+  <meta name="description" content="Go语言使用mysql数据库">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go语言使用mysql数据库">
+  <meta name="twitter:description" content="Go语言使用mysql数据库">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go语言使用mysql数据库">
+  <meta property="og:description" content="Go语言使用mysql数据库">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8mysql%E6%95%B0%E6%8D%AE%E5%BA%93/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go语言使用mysql数据库</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-10-09 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-10-09</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="go语言使用mysql数据库">Go语言使用mysql数据库</h2>
+
+<p>mysql目前来说是使用最为流行的关系型数据库，golang操作mysql使用最多的包go-sql-driver/mysql。</p>
+
+<p>sqlx包是作为database/sql包的一个额外扩展包，在原有的database/sql加了很多扩展，如直接将查询的数据转为结构体，大大简化了代码书写，当然database/sql包中的方法同样起作用。</p>
+
+<p>github地址：</p>
+
+<p>https://github.com/go-sql-driver/mysql</p>
+
+<p>https://github.com/jmoiron/sqlx</p>
+
+<p><strong>安装</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get "github.com/go-sql-driver/mysql"
+go get "github.com/jmoiron/sqlx"
+</code></pre></div></div>
+
+<p><strong>连接数据库</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import (
+	"fmt" 
+	_ "github.com/go-sql-dirver/mysql" 
+	"github.com/jmoiron/sqlx" 
+
+)
+var Db *sqlx.DB
+db, err := sqlx.Open("mysql","username:password@tcp(ip:port)/database?charset=utf8")
+Db = db
+</code></pre></div></div>
+
+<p><strong>处理类型（Handle Types)</strong></p>
+
+<p>sqlx设计和database/sql使用方法是一样的。包含有4中主要的handle types：</p>
+
+<p>●  sqlx.DB - 和sql.DB相似，表示数据库。</p>
+
+<p>●  sqlx.Tx - 和sql.Tx相似，表示事物。</p>
+
+<p>●  sqlx.Stmt - 和sql.Stmt相似，表示prepared statement。</p>
+
+<p>●  sqlx.NamedStmt - 表示prepared statement（支持named parameters）</p>
+
+<p>所有的handler types都提供了对database/sql的兼容，意味着当你调用sqlx.DB.Query时，可以直接替换为sql.DB.Query.这就使得sqlx可以很容易的加入到已有的数据库项目中。</p>
+
+<p>此外，sqlx还有两个cursor类型：</p>
+
+<p>●  sqlx.Rows - 和sql.Rows类似，Queryx返回。</p>
+
+<p>●  sqlx.Row - 和sql.Row类似，QueryRowx返回。</p>
+
+<p>相比database/sql方法还多了新语法，也就是实现将获取的数据直接转换结构体实现。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Get(dest interface{}, …) error
+Select(dest interface{}, …) error 
+</code></pre></div></div>
+
+<p>建表，以下所有示例均已以下表结构作为操作基础。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CREATE TABLE `userinfo` (
+	`uid` INT(10) NOT NULL AUTO_INCREMENT,
+	`username` VARCHAR(64)  DEFAULT NULL,
+	`password` VARCHAR(32)  DEFAULT NULL,
+	`department` VARCHAR(64)  DEFAULT NULL,
+	`email` varchar(64) DEFAULT NULL,
+	`login_time` datetime default null,
+	`update_time` timestamp ,
+	PRIMARY KEY (`uid`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8
+</code></pre></div></div>
+
+<p><strong>Exec使用</strong></p>
+
+<p>Exec和MustExec从连接池中获取一个连接然后只想对应的query操作。对于不支持ad-hoc query execution的驱动，在操作执行的背后会创建一个prepared statement。在结果返回前这个connection会返回到连接池中。</p>
+
+<p>需要注意的是不同的数据库类型使用的占位符不同，mysql采用？作为占位符号。</p>
+
+<p><strong>Exec增删该示例</strong></p>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+package main
+
+
+import (
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	"fmt"
+	"time"
+
+)
+
+
+var Db *sqlx.DB
+
+
+func init(){
+
+	db,err:=sqlx.Open("mysql","root:12345678@tcp(127.0.0.1:3306)/mydb1?charset=utf8mb4")
+
+	if err!=nil{
+
+		fmt.Println(err)
+		panic(err)
+	}
+	Db = db
+
+}
+
+/*
+	CREATE TABLE `userinfo` (
+		`uid` INT(10) NOT NULL AUTO_INCREMENT,
+		`username` VARCHAR(64)  DEFAULT NULL,
+		`password` VARCHAR(32)  DEFAULT NULL,
+		`department` VARCHAR(64)  DEFAULT NULL,
+		`email` varchar(64) DEFAULT NULL,
+		`login_time` datetime default null,
+		`update_time` timestamp ,
+		PRIMARY KEY (`uid`)
+	)ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+ */
+
+func main(){
+
+    // insert
+	result,err:=Db.Exec("insert into userinfo(uid,username,password,department,email,login_time) values (?,?,?,?,?,?)",1,"xiaomai","xxxxx","招聘","hr@129.com",time.Now().Format("2006-01-02 15:04:05"))
+
+	if err!=nil{
+
+		panic(err)
+	}
+
+
+	// 通过LastInsertId可以获取插入数据的id
+	userId,err:= result.LastInsertId()
+	// 通过RowsAffected可以获取受影响的行数
+	rowCount,err:=result.RowsAffected()
+
+
+	fmt.Println(userId)   //1
+	fmt.Println(rowCount) //1
+	fmt.Println(time.Now()) // 2019-10-10 11:16:23.370620694 +0800 CST m=+0.004333327
+
+	// update
+
+	result_u,err:=Db.Exec("update userinfo set username=? where uid =?","zizi",1)
+
+	if err!=nil{
+		fmt.Println("update err",err)
+	}else{
+
+
+		userId,_= result_u.LastInsertId()
+
+		rowCount,_=result_u.RowsAffected()
+
+		fmt.Println(userId)     // 0
+		fmt.Println(rowCount)   // 1
+
+
+	}
+
+
+	result_del,err:=Db.Exec("delete from userinfo ")
+
+	if err!=nil{
+
+		fmt.Println("delete err",err)
+	}else{
+		rowCount,_=result_del.RowsAffected()
+		fmt.Println(rowCount)  // 1
+
+	}
+
+
+
+}
+
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>Query</strong></p>
+
+<p>Query是database/sql中执行查询主要使用的方法，该方法Query返回一个sql.Rows对象和一个error对象。</p>
+
+<p>在使用的时候应该吧Rows当成一个游标而不是一系列的结果。通过Next()迭代每次获取一列结果，对于查询结果非常巨大的情况下，可以有效的限制内存的使用，Scan()利用reflect把sql每一列结果映射到go语言的数据类型如string，[]byte等。如果你没有遍历完全部的rows结果，一定要记得在把connection返回到连接池之前调用rows.Close()。</p>
+
+<p><strong>Query的示例</strong></p>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+
+import (
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	"fmt"
+	"time"
+	"database/sql"
+
+)
+
+func query(){
+
+	result,err:=Db.Query("select uid,username,login_time,update_time from userinfo")
+
+	if err!=nil{
+
+		fmt.Println("query error")
+		panic(err)
+	}
+
+	for result.Next() {
+
+
+		/*
+		type NullString struct {
+		    String string
+		    Valid  bool // Valid is true if String is not NULL
+		}
+		 */
+		var uid int  //sql.NullInt64
+		var username string
+		var login_time sql.NullString
+		var update_time sql.NullString
+
+		err=result.Scan(&amp;uid,&amp;username,&amp;login_time,&amp;update_time)
+
+		if err!=nil{
+
+			panic(err)
+		}
+
+		fmt.Println(uid,username,login_time,update_time)
+
+
+		/*
+
+		1 zizi { false} {2019-10-10 11:33:18 true}
+		2 xiaomai { false} {2019-10-10 11:32:59 true}
+
+
+		mysql&gt; select * from userinfo;
+		+-----+----------+----------+------------+-------+------------+---------------------+
+		| uid | username | password | department | email | login_time | update_time         |
+		+-----+----------+----------+------------+-------+------------+---------------------+
+		|   1 | zizi     | xxxx     |            |       | NULL       | 2019-10-10 11:33:18 |
+		|   2 | xiaomai  | xxxx     |            |       | NULL       | 2019-10-10 11:32:59 |
+		+-----+----------+----------+------------+-------+------------+---------------------+
+		 */
+
+	}
+
+
+}
+
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>Queryx</strong></p>
+
+<p>Queryx和Query行为很相似，不过返回一个sqlx.Rows对象和一个error对象，支持扩展的scan行为,同时可将对数据进行结构体转换。</p>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+
+func queryx(){
+
+	type person struct{
+
+		Uid int                       `db:"uid"`
+		Username string				  `db:"username"`
+		Email string                  `db:"email"`
+		Login_time sql.NullString     `db:"login_time"`
+		Update_time sql.NullString    `db:"update_time"`
+
+	}
+
+	result,err:=Db.Queryx("select uid,username,email,login_time,update_time from userinfo")
+	if err!=nil{
+
+		panic(err)
+
+	}
+
+	for result.Next(){
+
+		var p person
+		err=result.StructScan(&amp;p)
+		if err!=nil{
+			panic(err)
+		}
+		fmt.Println(p)
+		fmt.Println(p.Username)
+		/*
+		{1 zizi  { false} {2019-10-10 11:33:18 true}}
+		zizi
+		{2 xiaomai  { false} {2019-10-10 11:32:59 true}}
+		xiaomai
+		 */
+
+	}
+
+
+
+}
+
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>QueryRow和QueryRowx</strong></p>
+
+<p>QueryRow和QueryRowx都是从数据库中获取一条数据</p>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+
+package main
+
+import (
+    _ "github.com/go-sql-driver/mysql"
+    "github.com/jmoiron/sqlx"
+    "fmt"
+)
+
+var Db *sqlx.DB
+
+type stu struct {
+    Username string   `db:"username"`
+    Password string      `db:"password"`
+    Department string  `db:"department"`
+    Email string        `db:"email"`
+}
+
+func init()  {
+    db, err := sqlx.Open("mysql", "stu:1234qwer@tcp(10.0.0.241:3307)/test?charset=utf8")
+    if err != nil {
+        fmt.Println("open mysql failed,", err)
+        return
+    }
+    Db = db
+}
+
+func main()  {
+    row := Db.QueryRow("SELECT username,password,email FROM userinfo where uid = ?",1) // QueryRow返回错误，错误通过Scan返回
+    var username,password,email string
+    err :=row.Scan(&amp;username,&amp;password,&amp;email)
+    if err != nil{
+        fmt.Println(err)
+    }
+    fmt.Printf("this is QueryRow res:[%s:%s:%s]\n",username,password,email)
+    var s stu
+    err1 := Db.QueryRowx("SELECT username,password,email FROM userinfo where uid = ?",2).StructScan(&amp;s)
+    if err1 != nil{
+        fmt.Println("QueryRowx error :",err1)
+    }else {
+        fmt.Printf("this is QueryRowx res:%v",s)
+    }
+}
+//this is QueryRow res:[wd:123:wd@163.com]
+//this is QueryRowx res:{jack 1222  jack@165.com}
+
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>Get 和Select（非常常用）</strong></p>
+
+<p>Get和Select是一个非常省时的扩展，可直接将结果赋值给结构体，其内部封装了StructScan进行转化。Get用于获取单个结果然后Scan，Select用来获取结果切片。</p>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+
+func get_or_select(){
+
+	type person struct{
+
+		Uid int                       `db:"uid"`
+		Username string				  `db:"username"`
+		Email string                  `db:"email"`
+		Login_time sql.NullString     `db:"login_time"`
+		Update_time sql.NullString    `db:"update_time"`
+
+	}
+
+	var p []person
+
+
+	err:=Db.Select(&amp;p,"select uid,username,email,login_time,update_time from userinfo where uid=1")
+	if err!=nil{
+
+		panic(err)
+
+	}
+
+	fmt.Println(p) // [{1 zizi  { false} {2019-10-10 11:33:18 true}}]
+
+
+	var s person
+	err= Db.Get(&amp;s,"select uid,username,email,login_time,update_time from userinfo where uid=1")
+
+	if err!=nil{
+		panic(err)
+	}
+
+	fmt.Println(s) // {1 zizi  { false} {2019-10-10 11:33:18 true}}
+
+
+}
+
+
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>sql预声明（Prepared Statements）</strong></p>
+
+<p>对于大部分的数据库来说，当一个query执行的时候，在sql语句数据库内部声明已经声明过了，其声明是在数据库中，我们可以提前进行声明，以便在其他地方重用。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>stmt, err := db.Prepare(`SELECT * FROM place WHERE telcode=?`)
+row = stmt.QueryRow(65)
+ 
+tx, err := db.Begin()
+txStmt, err := tx.Prepare(`SELECT * FROM place WHERE telcode=?`)
+row = txStmt.QueryRow(852)
+</code></pre></div></div>
+
+<p>当然sqlx还提供了Preparex()进行扩展，可直接用于结构体转换</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>stmt, err := db.Preparex(`SELECT * FROM place WHERE telcode=?`)
+var p Place
+err = stmt.Get(&amp;p, 852)
+</code></pre></div></div>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+
+func prepare(){
+
+	type person struct{
+
+		Uid int                       `db:"uid"`
+		Username string				  `db:"username"`
+		Email string                  `db:"email"`
+		Login_time sql.NullString     `db:"login_time"`
+		Update_time sql.NullString    `db:"update_time"`
+
+	}
+
+
+
+	stmt,err:=Db.Preparex("select uid,username,email,login_time,update_time from userinfo where uid=? ")
+
+	if err!=nil{
+		panic(err)
+	}
+
+	var p []person
+	err = stmt.Select(&amp;p,1)
+
+	fmt.Println(p)
+
+	var s person
+	err = stmt.Get(&amp;p,2)
+	fmt.Println(s)
+
+
+}
+
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>事务（Transactions）</strong></p>
+
+<p>事务操作是通过三个方法实现：</p>
+
+<p>Begin()：开启事务</p>
+
+<p>Commit()：提交事务（执行sql)</p>
+
+<p>Rollback()：回滚</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tx, err := db.Begin()
+err = tx.Exec(...)
+err = tx.Commit()
+
+//或者使用sqlx扩展的事务
+tx := db.MustBegin()
+tx.MustExec(...)
+err = tx.Commit()
+</code></pre></div></div>
+
+<p>代码：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main()  {
+	tx, err := Db.Begin()
+	_, err = tx.Exec("insert into userinfo(username,password) values(?,?)", "Rose","2223")
+	if err != nil {
+		tx.Rollback()
+	}
+	_, err = tx.Exec("insert into userinfo(username,password) values(?,?)", "Mick",222)
+	if err != nil {
+		fmt.Println("exec sql error:",err)
+		tx.Rollback()
+	}
+	err = tx.Commit()
+	if err != nil {
+		fmt.Println("commit error")
+	}
+</code></pre></div></div>
+
+<p>}</p>
+
+<p><strong>连接池设置</strong></p>
+
+<p>默认情况下，连接池增长无限制，并且只要连接池中没有可用的空闲连接，就会创建连接。我们可以使用DB.SetMaxOpenConns设置池的最大大小。未使用的连接标记为空闲，如果不需要则关闭。要避免建立和关闭大量连接，可以使用DB.SetMaxIdleConns设置最大空闲连接。</p>
+
+<p>注意：该设置方法golang版本至少为1.2</p>
+
+<p>DB.SetMaxIdleConns(n int)    设置最大空闲连接数</p>
+
+<p>DB.SetMaxOpenConns(n int)    设置最大打开的连接数</p>
+
+<p>代码：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="n">_</span> <span class="s2">"github.com/go-sql-driver/mysql"</span>
+	<span class="s2">"github.com/jmoiron/sqlx"</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+<span class="n">var</span> <span class="n">Db</span> <span class="p">*</span><span class="n">sqlx</span><span class="p">.</span><span class="n">DB</span>
+
+<span class="n">func</span> <span class="n">init</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">db</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">sqlx</span><span class="p">.</span><span class="n">Open</span><span class="p">(</span><span class="s2">"mysql"</span><span class="p">,</span> <span class="s2">"stu:1234qwer@tcp(10.0.0.241:3307)/test?charset=utf8"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"open mysql failed,"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">Db</span> <span class="p">=</span> <span class="n">db</span>
+	<span class="n">Db</span><span class="p">.</span><span class="n">SetMaxOpenConns</span><span class="p">(</span><span class="m">30</span><span class="p">)</span>
+	<span class="n">Db</span><span class="p">.</span><span class="n">SetMaxIdleConns</span><span class="p">(</span><span class="m">15</span><span class="p">)</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a href="https://www.cnblogs.com/wdliu/p/9330278.html">https://www.cnblogs.com/wdliu/p/9330278.html</a></p>
+
+<p><a href="https://www.cnblogs.com/zhaof/p/8511550.html">https://www.cnblogs.com/zhaof/p/8511550.html</a></p>
+
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8redis/" data-toggle="tooltip" data-placement="top" title="Go语言使用redis/mysql数据库">上一篇：  <span>Go语言使用redis/mysql数据库</span>
+            </a>
+        </li>
+        
+        
+        <li class="next">
+            <a href="/2019/10/ETCD%E9%9B%86%E7%BE%A4%E7%9A%84%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%89%A9%E5%AE%B9/" data-toggle="tooltip" data-placement="top" title="ETCD集群的配置与扩容">下一篇：  <span>ETCD集群的配置与扩容</span>
+            </a>
+        </li>
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>

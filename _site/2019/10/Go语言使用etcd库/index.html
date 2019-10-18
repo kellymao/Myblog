@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go语言使用etcd库</title>
+  <meta name="description" content="Go语言使用etcd库">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go语言使用etcd库">
+  <meta name="twitter:description" content="Go语言使用etcd库">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go语言使用etcd库">
+  <meta property="og:description" content="Go语言使用etcd库">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8etcd%E5%BA%93/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go语言使用etcd库</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-10-14 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-10-14</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="go语言使用etcd库">Go语言使用etcd库</h2>
+
+<h3 id="etcdctl-基本使用">etcdctl 基本使用</h3>
+
+<p>1 安装</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum install etcd
+</code></pre></div></div>
+
+<p>2 查看etcd版本的信息</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[root@localhost etcd]# ./etcd -version
+etcd Version: 3.3.2
+Git SHA: c9d46ab37
+Go Version: go1.9.4
+Go OS/Arch: linux/amd64
+</code></pre></div></div>
+
+<p>3 使用etcd</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export ETCDCTL_API=3
+HOST_1=xx.xxx.xx.xx
+HOST_2=10.240.0.18
+HOST_3=10.240.0.19
+ENDPOINTS=$HOST_1:2379,$HOST_2:2379,$HOST_3:2379
+</code></pre></div></div>
+
+<p><strong>列出节点列表：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl --endpoints=$ENDPOINTS member list
+8e9e05c52164694d, started, default, http://localhost:2380, http://10.18.8.188:2379
+</code></pre></div></div>
+
+<p><strong>健康状态检查：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/0 # etcdctl  --write-out=table --endpoints=$ENDPOINTS endpoint status
++-------------------+------------------+---------+---------+-----------+-----------+------------+
+|     ENDPOINT      |        ID        | VERSION | DB SIZE | IS LEADER | RAFT TERM | RAFT INDEX |
++-------------------+------------------+---------+---------+-----------+-----------+------------+
+| 10.18.8.188:2379 | 8e9e05c52164694d |  3.3.11 |   20 kB |      true |         4 |          8 |
++-------------------+------------------+---------+---------+-----------+-----------+------------+
+</code></pre></div></div>
+
+<p><strong>集群状态监控(Cluster status)：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/0 # etcdctl --endpoints=$ENDPOINTS endpoint health
+10.18.8.188:2379 is healthy: successfully committed proposal: took = 662.041µs
+</code></pre></div></div>
+
+<p><strong>集群成员管理(Member)，member remove 和 member add替换成员:：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># get member ID
+export ETCDCTL_API=3
+HOST_1=10.240.0.13
+HOST_2=10.240.0.14
+HOST_3=10.240.0.15
+etcdctl --endpoints=${HOST_1}:2379,${HOST_2}:2379,${HOST_3}:2379 member list
+
+# remove the member
+MEMBER_ID=278c654c9a6dfd3b
+etcdctl --endpoints=${HOST_1}:2379,${HOST_2}:2379,${HOST_3}:2379 \
+	member remove ${MEMBER_ID}
+
+# add a new member (node 4)
+export ETCDCTL_API=3
+NAME_1=etcd-node-1
+NAME_2=etcd-node-2
+NAME_4=etcd-node-4
+HOST_1=10.240.0.13
+HOST_2=10.240.0.14
+HOST_4=10.240.0.16 # new member
+etcdctl --endpoints=${HOST_1}:2379,${HOST_2}:2379 \
+	member add ${NAME_4} \
+	--peer-urls=http://${HOST_4}:2380
+</code></pre></div></div>
+
+<p>访问etcd(Access etcd)：</p>
+
+<p><strong>put 写操作:</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># etcdctl --endpoints=$ENDPOINTS put foo "Hello World"
+OK
+</code></pre></div></div>
+
+<p><strong>get 读操作:</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/0 # etcdctl --endpoints=$ENDPOINTS get foo
+foo
+hello World\!
+	
+root@pts/0 # etcdctl --endpoints=$ENDPOINTS --write-out="json" get foo
+{"header":{"cluster_id":14841639068965178418,"member_id":10276657743932975437,"revision":3,"raft_term":4},"kvs":[{"key":"Zm9v","create_revision":2,"mod_revision":3,"version":2,"value":"aGVsbG8gV29ybGRcIQ=="}],"count"	
+</code></pre></div></div>
+
+<p><strong>前缀查找(Get by prefix)：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/0 # etcdctl --endpoints=$ENDPOINTS put web web
+OK
+
+root@pts/0 # etcdctl --endpoints=$ENDPOINTS put web/web1  web1
+OK
+ 
+root@pts/0 # etcdctl --endpoints=$ENDPOINTS put web/web2  web2
+OK
+
+root@pts/0 # etcdctl --endpoints=$ENDPOINTS get web --prefix
+web
+web
+web/web1
+web1
+web/web2
+web2
+</code></pre></div></div>
+
+<p><strong>删除操作(Delete)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/0 # etcdctl --endpoints=$ENDPOINTS del web  --prefix
+3
+</code></pre></div></div>
+
+ 	root@pts/0 # etcdctl –endpoints=$ENDPOINTS del foo
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1
+</code></pre></div></div>
+
+<p><strong>监听(Watch)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#终端1 
+etcdctl --endpoints=$ENDPOINTS watch stock1
+# 。。。什么都不打印，在等待结果
+
+#再开一个终端
+etcdctl --endpoints=$ENDPOINTS put stock1 1000
+OK
+
+#查看终端1 
+root@pts/0 # etcdctl --endpoints=$ENDPOINTS watch stock1
+PUT
+stock1
+1000
+
+#示例2 
+etcdctl --endpoints=$ENDPOINTS watch stock --prefix
+etcdctl --endpoints=$ENDPOINTS put stock1 10
+etcdctl --endpoints=$ENDPOINTS put stock2 20
+</code></pre></div></div>
+
+<p><strong>租约(Lease)</strong></p>
+
+<p>lease to write with TTL:</p>
+
+<p>创建租约：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># 创建一个20s的租约
+etcdctl --endpoints=$ENDPOINTS lease grant 20
+lease 694d6dc94c8fda10 granted with TTL(20s)
+
+# 使用租约的 id 进行 put 操作
+$ ./etcdctl --endpoints=$ENDPOINTS put --lease=694d6dc94c8fda10 "name" "zyq"
+OK 
+# 20s后get发现 key被删除了
+$ ./etcdctl --endpoints=$ENDPOINTS get "name"
+# 空应答
+</code></pre></div></div>
+
+<p>删除租约：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># 删除租约
+etcdctl --endpoints=$ENDPOINTS  lease revoke 694d6dc94c8fda14
+</code></pre></div></div>
+
+<p>自动续租：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># 创建一个20s的租约
+$ ./etcdctl lease grant 20
+lease 694d673115905e4f granted with TTL(20s)
+# 自动续租
+$ ./etcdctl lease keep-alive 694d673115905e4f
+lease 694d673115905e4f keepalived with TTL(20)
+lease 694d673115905e4f keepalived with TTL(20)
+</code></pre></div></div>
+
+<p><a href="https://www.jianshu.com/p/afc51382cc62">https://www.jianshu.com/p/afc51382cc62</a></p>
+
+<p><a href="https://www.jianshu.com/p/b788c3271846">https://www.jianshu.com/p/b788c3271846</a></p>
+
+<h3 id="v2-api">v2 api</h3>
+
+<p><strong>获取 etcd 服务的版本信息</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http='10.18.8.17'
+root@pts/1 # curl -s http://10.18.8.188:2379/version | python -m json.tool
+{
+	"etcdcluster": "3.3.0",
+	"etcdserver": "3.3.11"
+}
+</code></pre></div></div>
+
+<p><strong>查看节点信息</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl  -s http://10.18.8.188:2379/v2/members | python -m json.tool	
+
+root@pts/1 # curl  -s http://$http:2379/v2/members | python -m json.tool
+{
+	"members": [
+		{
+			"clientURLs": [
+				"http://10.18.8.188:2379"
+			],
+			"id": "8e9e05c52164694d",
+			"name": "default",
+			"peerURLs": [
+				"http://localhost:2380"
+			]
+		}
+	]
+}
+</code></pre></div></div>
+
+<p><strong>成员管理</strong></p>
+
+<p>etcd 还保存了集群的数据信息，包括节点之间的网络信息，操作的统计信息。</p>
+
+<p>/v2/stats/leader会返回集群中 leader 的信息，以及 followers 的基本信息</p>
+
+<p>/v2/stats/self 会返回当前节点的信息</p>
+
+<p>/v2/state/store：会返回各种命令的统计信息</p>
+
+<p><strong>增删改查</strong></p>
+
+<p>注意： v3和http接口的数据不在同一个存储区，用v2的api才会和http同一个存储区</p>
+
+<p>V2和V3之间的数据结构完全不同，互不兼容，也就是说使用V2版本的API创建的数据只能使用V2的API访问，V3的版本的API创建的数据只能使用V3的API访问。这就造成我们访问etcd中保存的flannel的数据需要使用
+etcdctl的V2版本的客户端，而访问kubernetes的数据需要设置ETCDCTL_API=3环境变量来指定V3版本的API。</p>
+
+<p>单个key：</p>
+
+<p>1)新建单个key：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl  -s http://10.18.8.188:2379/v2/keys/site -X PUT -d value="www.361way.com" | python -m json.tool
+{
+	"action": "set",
+	"node": {
+		"createdIndex": 9,
+		"key": "/site",
+		"modifiedIndex": 9,
+		"value": "www.361way.com"
+	}
+}
+</code></pre></div></div>
+
+<p>2)查单个key ：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl  -s http://10.18.8.188:2379/v2/keys/site | python -m json.tool 
+{
+	"action": "get",
+	"node": {
+		"createdIndex": 9,
+		"key": "/site",
+		"modifiedIndex": 9,
+		"value": "www.361way.com"
+	}
+}
+</code></pre></div></div>
+
+<p>3)修改值</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl  -s http://10.18.8.188:2379/v2/keys/mysite -X PUT -d value="www.361way.com" | python -m json.tool
+{
+	"action": "set",
+	"node": {
+		"createdIndex": 10,
+		"key": "/mysite",
+		"modifiedIndex": 10,
+		"value": "www.361way.com"
+	},
+	"prevNode": {
+		"createdIndex": 8,
+		"key": "/mysite",
+		"modifiedIndex": 8,
+		"value": "www.361way.com"
+	}
+}
+</code></pre></div></div>
+
+<p>4)删除值</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl  -s http://10.18.8.188:2379/v2/keys/mysite -X DELETE  | python -m json.tool
+{
+	"action": "delete",
+	"node": {
+		"createdIndex": 10,
+		"key": "/mysite",
+		"modifiedIndex": 11
+	},
+	"prevNode": {
+		"createdIndex": 10,
+		"key": "/mysite",
+		"modifiedIndex": 10,
+		"value": "www.361way.com"
+	}
+}
+</code></pre></div></div>
+
+<p>5)建目录：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#建目录
+ curl  -s http://10.18.8.188:2379/v2/keys/dsite -X PUT  -d dir=true  | python -m json.tool
+{
+	"action": "set",
+	"node": {
+		"createdIndex": 13,
+		"dir": true,
+		"key": "/dsite",
+		"modifiedIndex": 13
+	}
+}
+
+#设置两个值
+curl  -s http://10.18.8.188:2379/v2/keys/site/my1 -X PUT -d value="www" | python -m json.tool
+curl  -s http://10.18.8.188:2379/v2/keys/site/my2 -X PUT -d value="www" | python -m json.tool
+</code></pre></div></div>
+
+<p>6)查目录</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl  -s http://10.18.8.188:2379/v2/keys/site?recursive=true |  python -m json.tool
+{
+	"action": "get",
+	"node": {
+		"createdIndex": 12,
+		"dir": true,
+		"key": "/site",
+		"modifiedIndex": 12,
+		"nodes": [
+			{
+				"createdIndex": 14,
+				"key": "/site/my1",
+				"modifiedIndex": 14,
+				"value": "www"
+			},
+			{
+				"createdIndex": 15,
+				"key": "/site/my2",
+				"modifiedIndex": 15,
+				"value": "www"
+			}
+		]
+	}
+}
+
+
+ curl  -s http://10.18.8.188:2379/v2/keys/site?sorted=true |  python -m json.tool
+</code></pre></div></div>
+
+<p>7)删目录</p>
+
+<p>?dir=true　　　　　　　　删除目录</p>
+
+<p>?recursive=true　　　　  删除非空目录</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl 'http://127.0.0.1:2379/v2/keys/dir1?dir=true' -XDELETE | python -m json.tool
+curl 'http://127.0.0.1:2379/v2/keys/dir1?recursive=true' -XDELETE | python -m json.tool
+</code></pre></div></div>
+
+<p><strong>TTL 过期</strong></p>
+
+<p>8)创建一个带ttl的key</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl  -s http://10.18.8.188:2379/v2/keys/site/my3 -X PUT -d value=abc -d ttl=15 | python -m json.tool
+{
+	"action": "set",
+	"node": {
+		"createdIndex": 20,
+		"expiration": "2019-10-15T02:06:44.263432256Z",
+		"key": "/site/my3",
+		"modifiedIndex": 20,
+		"ttl": 15,
+		"value": "abc"
+	}
+}
+</code></pre></div></div>
+
+<p>9)修改原有key 的ttl （value必须设置，否则更新为空）</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl  -s http://10.18.8.188:2379/v2/keys/site/my1 -X PUT -d value=abc -d ttl=15 | python -m json.tool
+{
+	"action": "set",
+	"node": {
+		"createdIndex": 18,
+		"expiration": "2019-10-15T02:05:56.982680461Z",
+		"key": "/site/my1",
+		"modifiedIndex": 18,
+		"ttl": 15,
+		"value": "abc"
+	}
+}
+</code></pre></div></div>
+
+<p>10)新建一个目录，包含ttl</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl  -s http://10.18.8.188:2379/v2/keys/sitedir  -X PUT -d dir=true  -d ttl=35  | python -m json.tool
+{
+	"action": "set",
+	"node": {
+		"createdIndex": 24,
+		"dir": true,
+		"expiration": "2019-10-15T02:11:25.314129113Z",
+		"key": "/sitedir",
+		"modifiedIndex": 24,
+		"ttl": 35
+	}
+}
+
+#查看
+curl  -s http://10.18.8.188:2379/v2/keys/sitedir?recursive=true  
+{"action":"get","node":{"key":"/sitedir","dir":true,"expiration":"2019-10-15T02:17:47.546580508Z","ttl":25,"modifiedIndex":29,"createdIndex":29}}
+
+#删除
+root@pts/1 #  curl  -s http://10.18.8.188:2379/v2/keys/sitedir?recursive=true  -X DELETE
+{"action":"delete","node":{"key":"/sitedir","dir":true,"modifiedIndex":30,"createdIndex":29},"prevNode":{"key":"/sitedir","dir":true,"expiration":"2019-10-15T02:17:47.546580508Z","ttl":18,"modifiedIndex":29,"createdIndex":29}}
+</code></pre></div></div>
+
+<p>11)监听watch key</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/1 #  curl  -s http://10.18.8.188:2379/v2/keys/web?wait=true
+
+#有变化就返回修改后的值 
+</code></pre></div></div>
+
+<p><a href="http://www.iigrowing.cn/etcd_shi_yong_ru_men.html">http://www.iigrowing.cn/etcd_shi_yong_ru_men.html</a></p>
+
+<p><a href="http://www.361way.com/etcd-api-base/6136.html">http://www.361way.com/etcd-api-base/6136.html</a></p>
+
+<h3 id="v3版本api">v3版本api</h3>
+
+<p>1) 查看版本：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>root@pts/0 # curl  -s http://10.18.8.188:2379/version
+{"etcdserver":"3.3.11","etcdcluster":"3.3.0"}
+</code></pre></div></div>
+
+<p>2） base64编码转换</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;&lt;COMMENT
+https://www.base64encode.org/
+foo is 'Zm9v' in Base64
+bar is 'YmFy'
+COMMENT
+
+&gt;&gt;&gt; import base64
+&gt;&gt;&gt; base64.b64encode("web")
+'d2Vi'
+
+&gt;&gt;&gt; base64.b64decode("d2Vi")
+'web'
+</code></pre></div></div>
+
+<p>3）创建键值对</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>//V3版本，注意在V3版本中所有的key和value都必须转换为base64编码然后才可以存储
+// foo is 'Zm9v' in Base64
+// bar is 'YmFy' in Base64
+// 创建键值对 foo:bar
+
+ curl -s  http://10.18.8.188:2379/v3beta/kv/put  -X POST -d '{"key": "Zm9v", "value": "YmFy"}' | python -m json.tool
+{
+	"header": {
+		"cluster_id": "14841639068965178418",
+		"member_id": "10276657743932975437",
+		"raft_term": "4",
+		"revision": "22"
+	}
+}
+</code></pre></div></div>
+
+<p>4）查看键值对</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> curl -L http://10.18.8.188:2379/v3beta/kv/range   -X POST -d '{"key": "Zm9v"}' | python -m json.tool
+ 
+ {
+	"count": "1",
+	"header": {
+		"cluster_id": "14841639068965178418",
+		"member_id": "10276657743932975437",
+		"raft_term": "4",
+		"revision": "22"
+	},
+	"kvs": [
+		{
+			"create_revision": "19",
+			"key": "Zm9v",
+			"mod_revision": "22",
+			"value": "YmFy",
+			"version": "4"
+		}
+	]
+}
+</code></pre></div></div>
+
+<p>https://github.com/etcd-io/etcd/blob/master/Documentation/dev-guide/api_grpc_gateway.md</p>
+
+<p><a href="https://segmentfault.com/a/1190000014045625">https://segmentfault.com/a/1190000014045625</a></p>
+
+<h2 id="go-etcd-使用">go etcd 使用</h2>
+
+<p>首先获取clientv3：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get go.etcd.io/etcd/clientv3
+</code></pre></div></div>
+
+<p>连接etcd:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>config := clientv3.Config{
+	Endpoints:[]string{"192.168.50.250:2379","172.16.196.129:2379"},  
+	DialTimeout:10*time.Second,  
+}
+client,err := clientv3.New(config)
+if err != nil {
+	panic(err)
+}
+defer client.Close()
+</code></pre></div></div>
+
+<p>kv是一个用于操作kv的连接，其实它本质上是用了client的conn，为了更加专注于键值对的操作，关闭client后也会使kv无法用。（kv的操作client也能实现）</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kv := clientv3.NewKV(client)  
+</code></pre></div></div>
+
+<p>设置一个超时的context:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ctx,cancleFunc:= context.WithTimeout(context.TODO(),5*time.Second)
+</code></pre></div></div>
+
+<p>context.WithTimeout()会返回一个timerCtx{}，并在这个结构体里注入了超时时间。cancleFunc是一个取消操作的函数。put,get等操作是阻塞型操作，context里有一个用于管理超时的select,当时间一到就会隐式执行cancelFunc，使操作停止并返回错误。如果显式的调用cancelFunc()则会立即停止操作，返回错误。</p>
+
+<p>put操作：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>putResp,err := kv.Put(ctx,"/job/v3","push the box",clientv3.WithPrevKV())  //withPrevKV()是为了获取操作前已经有的key-value
+if err != nil{
+		panic(err)
+	}
+fmt.Printf("%v",putResp.PrevKv)
+getResp,err := kv.Get(ctx,"/job/",clientv3.WithPrefix()) //withPrefix()是未了获取该key为前缀的所有key-value
+if err != nil{
+	panic(err)
+}
+fmt.Printf("%v",getResp.Kvs)	
+</code></pre></div></div>
+
+<p>监听etcd集群键的改变：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wc := client.Watch(context.Background(), "/job/", clientv3.WithPrefix(),clientv3.WithPrevKV())
+	for v := range wc {
+		if v.Err() != nil {
+			panic(err)
+		}
+		for _, e := range v.Events {
+			fmt.Printf("type:%v\n kv:%v  prevKey:%v  ", e.Type, e.Kv, e.PrevKv)
+		}
+	}	
+</code></pre></div></div>
+
+<p>代码：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+
+	<span class="s2">"context"</span>
+	<span class="s2">"fmt"</span>
+
+	<span class="n">_</span> <span class="s2">"strconv"</span>
+	<span class="s2">"time"</span>
+	<span class="s2">"go.etcd.io/etcd/clientv3"</span>
+<span class="p">)</span>
+
+
+<span class="n">func</span> <span class="n">main</span><span class="p">(){</span>
+
+	<span class="p">//</span><span class="err">连接</span><span class="n">etcd</span><span class="p">:</span>
+	<span class="n">cli</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">clientv3</span><span class="p">.</span><span class="n">New</span><span class="p">(</span><span class="n">clientv3</span><span class="p">.</span><span class="n">Config</span><span class="p">{</span>
+
+		<span class="n">Endpoints</span><span class="p">:</span> <span class="p">[]</span><span class="k">string</span><span class="p">{</span><span class="s2">"http://10.18.8.188:2379"</span><span class="p">}</span> <span class="p">,</span>
+		<span class="n">DialTimeout</span><span class="p">:</span> <span class="m">5</span> <span class="p">*</span> <span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">,</span>
+	<span class="p">})</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">defer</span> <span class="n">cli</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+
+	<span class="n">kv</span> <span class="p">:=</span> <span class="n">clientv3</span><span class="p">.</span><span class="n">NewKV</span><span class="p">(</span><span class="n">cli</span><span class="p">)</span>
+
+	<span class="p">//</span><span class="err">设置一个超时的</span><span class="n">context</span>
+	<span class="n">ctx</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span> <span class="n">context</span><span class="p">.</span><span class="n">WithTimeout</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">Background</span><span class="p">(),</span><span class="m">5</span><span class="p">*</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">)</span>
+
+	<span class="p">//</span><span class="err">新建一个</span><span class="n">kv</span>
+
+	<span class="n">putResp</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">kv</span><span class="p">.</span><span class="n">Put</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="s2">"/job/v3"</span><span class="p">,</span><span class="s2">"push the box"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">putResp</span><span class="p">)</span> <span class="p">//</span> <span class="p">&amp;{</span><span class="n">cluster_id</span><span class="p">:</span><span class="m">14841639068965178418</span> <span class="n">member_id</span><span class="p">:</span><span class="m">10276657743932975437</span> <span class="n">revision</span><span class="p">:</span><span class="m">23</span> <span class="n">raft_term</span><span class="p">:</span><span class="m">4</span>  <span class="p">&lt;</span><span class="n">nil</span><span class="p">&gt;}</span>
+
+	<span class="n">getResp</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">kv</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="s2">"/job/"</span><span class="p">,</span><span class="n">clientv3</span><span class="p">.</span><span class="n">WithPrefix</span><span class="p">())</span> <span class="p">//</span><span class="n">withPrefix</span><span class="p">()</span><span class="err">是未了获取该</span><span class="n">key</span><span class="err">为前缀的所有</span><span class="n">key</span><span class="p">-</span><span class="n">value</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil{
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">getResp</span><span class="p">)</span> <span class="p">//</span> <span class="p">&amp;{</span><span class="n">cluster_id</span><span class="p">:</span><span class="m">14841639068965178418</span> <span class="n">member_id</span><span class="p">:</span><span class="m">10276657743932975437</span> <span class="n">revision</span><span class="p">:</span><span class="m">24</span> <span class="n">raft_term</span><span class="p">:</span><span class="m">4</span>  <span class="p">[</span><span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">24</span> <span class="k">version</span><span class="p">:</span><span class="m">2</span> <span class="n">value</span><span class="p">:</span><span class="s2">"push the box"</span> <span class="p">]</span> <span class="p">%</span><span class="c1">!s(bool=false) %!s(int64=1)}
+</span>	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%v"</span><span class="p">,</span><span class="n">getResp</span><span class="p">.</span><span class="n">Kvs</span><span class="p">)</span> <span class="p">//[</span><span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">24</span> <span class="k">version</span><span class="p">:</span><span class="m">2</span> <span class="n">value</span><span class="p">:</span><span class="s2">"push the box"</span> <span class="p">]</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ev</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">getResp</span><span class="p">.</span><span class="n">Kvs</span><span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s:%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">ev</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">ev</span><span class="p">.</span><span class="n">Value</span><span class="p">)</span>
+	<span class="p">}</span>
+
+
+	<span class="p">//</span> <span class="err">更新一个</span><span class="n">kv</span>
+
+	<span class="n">putnewResp</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">kv</span><span class="p">.</span><span class="n">Put</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="s2">"/job/v3"</span><span class="p">,</span><span class="s2">"push the new"</span><span class="p">,</span><span class="n">clientv3</span><span class="p">.</span><span class="n">WithPrevKV</span><span class="p">())</span>  <span class="p">//</span><span class="n">withPrevKV</span><span class="p">()</span><span class="err">是为了获取操作前已经有的</span><span class="n">key</span><span class="p">-</span><span class="n">value</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil{
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">putnewResp</span><span class="p">)</span>
+	<span class="p">//&amp;{</span><span class="n">cluster_id</span><span class="p">:</span><span class="m">14841639068965178418</span> <span class="n">member_id</span><span class="p">:</span><span class="m">10276657743932975437</span> <span class="n">revision</span><span class="p">:</span><span class="m">28</span> <span class="n">raft_term</span><span class="p">:</span><span class="m">4</span>  <span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">27</span> <span class="k">version</span><span class="p">:</span><span class="m">5</span> <span class="n">value</span><span class="p">:</span><span class="s2">"push the box"</span> <span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%v</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">putnewResp</span><span class="p">.</span><span class="n">PrevKv</span><span class="p">)</span>
+	<span class="p">//</span> <span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">31</span> <span class="k">version</span><span class="p">:</span><span class="m">9</span> <span class="n">value</span><span class="p">:</span><span class="s2">"push the box"</span>
+
+	<span class="n">getnewResp</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">kv</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="s2">"/job/v3"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil{
+</span>		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"修改后的值"</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">getnewResp</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">getnewResp</span><span class="p">.</span><span class="n">Kvs</span><span class="p">)</span> <span class="p">//[</span><span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">34</span> <span class="k">version</span><span class="p">:</span><span class="m">12</span> <span class="n">value</span><span class="p">:</span><span class="s2">"push the new"</span> <span class="p">]</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ev</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">getnewResp</span><span class="p">.</span><span class="n">Kvs</span><span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s:%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">ev</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">ev</span><span class="p">.</span><span class="n">Value</span><span class="p">)</span> <span class="p">//</span> <span class="p">/</span><span class="n">job</span><span class="p">/</span><span class="n">v3</span><span class="p">:</span><span class="n">push</span> <span class="n">the</span> <span class="n">new</span>
+	<span class="p">}</span>
+
+
+	<span class="p">//</span> <span class="err">启动一个新线程去更新</span>
+	<span class="n">go</span> <span class="n">func</span><span class="p">(</span><span class="n">cli</span>  <span class="p">*</span><span class="n">clientv3</span><span class="p">.</span><span class="n">Client</span><span class="p">){</span>
+
+		<span class="n">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="m">5</span> <span class="p">*</span> <span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">)</span>
+		<span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="p">=</span> <span class="n">cli</span><span class="p">.</span><span class="n">Put</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">Background</span><span class="p">(),</span><span class="s2">"/job/v3"</span><span class="p">,</span><span class="s2">"ttt"</span><span class="p">)</span>
+
+	<span class="p">}(</span><span class="n">cli</span><span class="p">)</span>
+
+	<span class="p">//</span> <span class="err">监控</span><span class="n">watch</span><span class="err">一个</span><span class="n">key</span>
+
+	<span class="n">wc</span> <span class="p">:=</span> <span class="n">cli</span><span class="p">.</span><span class="n">Watch</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">Background</span><span class="p">(),</span> <span class="s2">"/job/"</span><span class="p">,</span> <span class="n">clientv3</span><span class="p">.</span><span class="n">WithPrefix</span><span class="p">(),</span><span class="n">clientv3</span><span class="p">.</span><span class="n">WithPrevKV</span><span class="p">())</span>
+	<span class="n">for</span> <span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">wc</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">v</span><span class="p">.</span><span class="n">Err</span><span class="p">()</span> <span class="c1">!= nil {
+</span>			<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">e</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">v</span><span class="p">.</span><span class="n">Events</span> <span class="p">{</span>
+			<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"type:%v</span><span class="se">\n</span><span class="s2"> kv:%v  prevKey:%v  "</span><span class="p">,</span> <span class="n">e</span><span class="p">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">e</span><span class="p">.</span><span class="n">Kv</span><span class="p">,</span> <span class="n">e</span><span class="p">.</span><span class="n">PrevKv</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="p">/*</span>
+	<span class="n">type</span><span class="p">:</span><span class="n">PUT</span>
+	<span class="n">kv</span><span class="p">:</span><span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">37</span> <span class="k">version</span><span class="p">:</span><span class="m">15</span> <span class="n">value</span><span class="p">:</span><span class="s2">"ttt"</span>   <span class="n">prevKey</span><span class="p">:</span><span class="n">key</span><span class="p">:</span><span class="s2">"/job/v3"</span> <span class="n">create_revision</span><span class="p">:</span><span class="m">23</span> <span class="n">mod_revision</span><span class="p">:</span><span class="m">36</span> <span class="k">version</span><span class="p">:</span><span class="m">14</span> <span class="n">value</span><span class="p">:</span><span class="s2">"push the new"</span>
+
+	<span class="p">*/</span>
+
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>https://www.cnblogs.com/baylorqu/p/9996258.html</p>
+
+<p>https://www.jianshu.com/p/3206e35677b4</p>
+
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/10/etcd%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2%E4%B8%8E%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91/" data-toggle="tooltip" data-placement="top" title="etcd集群部署与遇到的坑(转)">上一篇：  <span>etcd集群部署与遇到的坑(转)</span>
+            </a>
+        </li>
+        
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>

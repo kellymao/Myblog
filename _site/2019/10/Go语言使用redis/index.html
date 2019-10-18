@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go语言使用redis/mysql数据库</title>
+  <meta name="description" content="Go语言使用redis数据库">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go语言使用redis/mysql数据库">
+  <meta name="twitter:description" content="Go语言使用redis数据库">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go语言使用redis/mysql数据库">
+  <meta property="og:description" content="Go语言使用redis数据库">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8redis/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go语言使用redis/mysql数据库</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-10-08 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-10-08</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="go语言使用redis数据库">Go语言使用redis数据库</h2>
+
+<p><strong>获取：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get github.com/garyburd/redigo/redis
+</code></pre></div></div>
+
+<p><strong>连接：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"github.com/garyburd/redigo/redis"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">c</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span> <span class="s2">"127.0.0.1:6379"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"Connect to redis error"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">c</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+<span class="p">}</span>	
+</code></pre></div></div>
+
+<p>读写：这里写入的值永远不会过期</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+
+	<span class="s2">"github.com/garyburd/redigo/redis"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">c</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span> <span class="s2">"127.0.0.1:6379"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"Connect to redis error"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">c</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+
+	<span class="n">_</span><span class="p">,</span> <span class="n">err</span> <span class="p">=</span> <span class="n">c</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"SET"</span><span class="p">,</span> <span class="s2">"mykey"</span><span class="p">,</span> <span class="s2">"superWang"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"redis set failed:"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">username</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"mykey"</span><span class="p">))</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"redis get failed:"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"Get mykey: %v </span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>设置key过期时间：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 方式一 
+_, err = c.Do("SET", "mykey", "superWang", "EX", "5")
+if err != nil {
+    fmt.Println("redis set failed:", err)
+}  
+
+// 方式二
+
+_, err = conn.Do("expire", "name", 10) //10秒过期
+if err != nil {
+    fmt.Println("set expire error: ", err)
+    return
+}
+</code></pre></div></div>
+
+<p><strong>批量写入读取</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MGET key [key …]
+MSET key value [key value …]
+</code></pre></div></div>
+
+<p><strong>批量写入读取对象(Hashtable)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>HMSET key field value [field value …]
+
+HGET key field 
+HMGET key field [field …]
+</code></pre></div></div>
+
+<p><strong>检测值是否存在</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EXISTS key
+</code></pre></div></div>
+
+<p><strong>删除</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DEL key [key …]
+</code></pre></div></div>
+
+<p><strong>设置过期时间</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EXPIRE key seconds
+</code></pre></div></div>
+
+<p>示例：</p>
+
+<p><br /></p>
+
+<details>
+<summary><font face="微软雅黑" color="red" size="3">代码折叠</font></summary>
+
+<pre><code>	
+func main(){
+
+	conn,err:=redis.Dial("tcp","127.0.0.1:6379")
+
+	process_err(err)
+
+	defer conn.Close()
+
+	_,err = conn.Do("set","name","wd","ex",5)
+
+	process_err(err)
+
+	username,err:=redis.String(conn.Do("GET","name"))
+
+	process_err(err)
+
+	_,err = conn.Do("expire","name","35")
+	process_err(err)
+
+	_ ,err =conn.Do("HSET","hashuser","user1","mao")
+
+	process_err(err)
+
+	_,err = conn.Do("HMSET","hashuser","user1","maomao","user2","zhangsan","user3","wangwu")
+
+	process_err(err)
+
+	fmt.Println(username)
+
+	_,err = conn.Do("expire","hashuser",30)
+	process_err(err)
+
+	hashuser,err := redis.String(conn.Do("HGET","hashuser","user1"))
+
+	process_err(err)
+
+	fmt.Println(hashuser)
+
+	hashusers,err := redis.Strings(conn.Do("HMGET","hashuser","user1","user2"))
+
+	process_err(err)
+
+	fmt.Println( reflect.TypeOf(hashusers))  //[]string
+	fmt.Println(hashusers)                   // [maomao zhangsan]
+
+	time.Sleep(31 * time.Second)
+
+	is_exist,err:=redis.Bool(conn.Do("exists","hashuser"))
+
+	process_err(err)
+
+	fmt.Println(is_exist)
+
+	json_to_redis(conn)
+
+}
+</code>  </pre>	
+</details>
+
+<p><br /></p>
+
+<p><strong>读写json到redis：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func json_to_redis(conn redis.Conn){
+
+	val :=map[string]string{"name":"zhangsan",
+		"age":"10",
+		}
+
+	v,err:=json.Marshal(val)
+
+	process_err(err)
+	n,err:=conn.Do("set","key1",v)
+
+	process_err(err)
+
+	if n == int64(1) {
+		fmt.Println("success")
+	}
+
+	fmt.Println(n,reflect.TypeOf(n))  // OK string 
+	rel,err:=redis.Bytes(conn.Do("get","key1"))
+	process_err(err)
+	fmt.Println(rel)  // [123 34 97 103 101 34 58 34 ]
+
+
+	var r map[string]string = make(map[string]string)
+
+	err= json.Unmarshal(rel,&amp;r)
+
+	process_err(err)
+
+	fmt.Println(r)        // map[age:10 name:zhangsan]
+
+	fmt.Println(r["name"])  // zhangsan 
+
+
+}
+</code></pre></div></div>
+
+<p>批量获取mget、批量设置mset</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>_, err = conn.Do("MSET", "name", "wd","age",22)
+	if err != nil {
+		fmt.Println("redis mset error:", err)
+	}
+	res, err := redis.Strings(conn.Do("MGET", "name","age"))
+	if err != nil {
+		fmt.Println("redis get error:", err)
+	} else {
+		res_type := reflect.TypeOf(res)
+		fmt.Printf("res type : %s \n", res_type)
+		fmt.Printf("MGET name: %s \n", res)
+		fmt.Println(len(res))
+	}
+//结果：
+//res type : []string 
+//MGET name: [wd 22] 
+//2
+</code></pre></div></div>
+
+<p><strong>列表操作</strong></p>
+
+<p>命令：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>redis 127.0.0.1:6379&gt; LPUSH runoobkey redis
+(integer) 1
+redis 127.0.0.1:6379&gt; LPUSH runoobkey mongodb
+(integer) 2
+redis 127.0.0.1:6379&gt; LPUSH runoobkey mysql
+(integer) 3
+redis 127.0.0.1:6379&gt; LRANGE runoobkey 0 10
+
+1) "mysql"
+2) "mongodb"
+3) "redis"
+	
+127.0.0.1:6379&gt; lpush dbset mysql oracle redis mongo tidb
+(integer) 5
+127.0.0.1:6379&gt; rpush dbset hbase
+(integer) 6	
+
+127.0.0.1:6379&gt; lrange dbset 0 6 
+1) "tidb"
+2) "mongo"
+3) "redis"
+4) "oracle"
+5) "mysql"
+6) "hbase"
+</code></pre></div></div>
+
+<p>代码实现：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func list_operate(conn redis.Conn){
+
+	n,err:=conn.Do("lpush","dblist","mysql","oracle","mongo","中国","test")
+	process_err(err)
+
+	fmt.Println(n)  //7
+
+	rel,err:=redis.String(conn.Do("lpop","dblist"))
+
+	process_err(err)
+	fmt.Println(rel) // mongo
+
+	relrange,err := redis.Values(conn.Do("lrange","dblist",0,10))
+
+	process_err(err)
+
+	fmt.Println(reflect.TypeOf(relrange))  // []interface {}
+
+	for _,v := range relrange {
+
+		fmt.Println(reflect.TypeOf(v)) //[]uint8
+		fmt.Println(v.([]byte)) // [111 114 97 99 108 101]
+
+		fmt.Println(string(v.([]byte))) // mongo 
+
+
+	}
+
+
+
+}
+</code></pre></div></div>
+
+<p><strong>HASH 操作：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func hash_operate(conn redis.Conn){
+
+	conn.Do("hmset","table","key1","val1","key2",10)
+
+	rel,_:=conn.Do("hget","table","key1")
+
+	fmt.Println(reflect.TypeOf(rel)) // []uint8
+
+	c_rel,_:=redis.String(conn.Do("hget","table","key1"))
+	fmt.Println(c_rel) // val1
+
+	c_rel1,_:=redis.Int64(conn.Do("hget","table","key2"))
+	fmt.Println(c_rel1) // 10
+
+	rel2,_:=conn.Do("HMGET","table","key1","key2")
+	fmt.Println(reflect.TypeOf(rel2))  // []interface {}
+
+
+	c_rel2,_ :=redis.Strings(conn.Do("HMGET","table","key1","key2"))
+	fmt.Println(c_rel2)  // [val1 10]
+
+
+	rel3,_:=conn.Do("hgetall","table")
+	fmt.Println(reflect.TypeOf(rel3)) // []interface {}
+
+	c_rel3,_:=redis.Values(conn.Do("hgetall","table"))
+	fmt.Println(c_rel3) // [[107 101 121 49] [118 97 108 49] [107 101 121 50] [49 48]]
+
+	for _,v := range c_rel3{
+
+		fmt.Println(string(v.([]byte)))
+		/*
+		key1
+		val1
+		key2
+		10
+
+		 */
+	}
+
+	c_rel5 ,_:= redis.Strings(conn.Do("hgetall","table"))
+	fmt.Println(c_rel5) // [key1 val1 key2 10]
+
+
+}	
+</code></pre></div></div>
+
+<p><strong>Pipelining(管道)：</strong></p>
+
+<p>管道操作可以理解为并发操作，并通过Send()，Flush()，Receive()三个方法实现。客户端可以使用send()方法一次性向服务器发送一个或多个命令，命令发送完毕时，使用flush()方法将缓冲区的命令输入一次性发送到服务器，客户端再使用Receive()方法依次按照先进先出的顺序读取所有命令操作结果。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Send(commandName string, args ...interface{}) error
+Flush() error
+Receive() (reply interface{}, err error)
+
+Send：发送命令至缓冲区
+Flush：清空缓冲区，将命令一次性发送至服务器
+Recevie：依次读取服务器响应结果，当读取的命令未响应时，该操作会阻塞。
+</code></pre></div></div>
+
+<p>示例：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+<span class="s2">"github.com/garyburd/redigo/redis"</span>
+<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">conn</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span><span class="s2">"10.1.210.69:6379"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"connect redis error :"</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">conn</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="n">conn</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="s2">"HSET"</span><span class="p">,</span> <span class="s2">"student"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"wd"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">,</span><span class="s2">"22"</span><span class="p">)</span>
+	<span class="n">conn</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="s2">"HSET"</span><span class="p">,</span> <span class="s2">"student"</span><span class="p">,</span><span class="s2">"Score"</span><span class="p">,</span><span class="s2">"100"</span><span class="p">)</span>
+	<span class="n">conn</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="s2">"HGET"</span><span class="p">,</span> <span class="s2">"student"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">)</span>
+	<span class="n">conn</span><span class="p">.</span><span class="n">Flush</span><span class="p">()</span>
+
+	<span class="n">res1</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">conn</span><span class="p">.</span><span class="n">Receive</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"Receive res1:%v </span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">res1</span><span class="p">)</span>
+	<span class="n">res2</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">conn</span><span class="p">.</span><span class="n">Receive</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"Receive res2:%v</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">res2</span><span class="p">)</span>
+	<span class="n">res3</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">conn</span><span class="p">.</span><span class="n">Receive</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"Receive res3:%s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="n">res3</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="p">//</span><span class="n">Receive</span> <span class="n">res1</span><span class="p">:</span><span class="m">0</span> 
+<span class="p">//</span><span class="n">Receive</span> <span class="n">res2</span><span class="p">:</span><span class="m">0</span>
+<span class="p">//</span><span class="n">Receive</span> <span class="n">res3</span><span class="p">:</span><span class="m">22</span>	
+</code></pre></div></div>
+
+<p><strong>发布/订阅</strong></p>
+
+<p>redis本身具有发布订阅的功能，其发布订阅功能通过命令SUBSCRIBE(订阅)／PUBLISH(发布)实现，并且发布订阅模式可以是多对多模式还可支持正则表达式，发布者可以向一个或多个频道发送消息，订阅者可订阅一个或者多个频道接受消息。</p>
+
+<p>客户端实现：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 客户端订阅 channel1 频道 
+
+./redis-cli
+127.0.0.1:6379&gt; SUBSCRIBE channel1 
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "channel1"
+3) (integer) 1
+
+
+
+
+// 服务器查看连接的客户端   
+127.0.0.1:6379&gt; client list 
+id=94 addr=127.0.0.1:11322 fd=5 name= age=3594 idle=0 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=32768 obl=0 oll=0 omem=0 events=r cmd=client
+id=102 addr=127.0.0.1:17938 fd=6 name= age=10 idle=10 flags=N db=0 sub=0 psub=0 multi=-1 qbuf=0 qbuf-free=0 obl=0 oll=0 omem=0 events=r cmd=command
+
+// 服务器发布
+127.0.0.1:6379&gt; 
+127.0.0.1:6379&gt; PUBLISH channel1 "this is a new test" 
+(integer) 1
+127.0.0.1:6379&gt; PUBLISH channel1 "this is a second  test" 
+(integer) 1
+
+// 客户端查看订阅的消息
+
+127.0.0.1:6379&gt; SUBSCRIBE channel1 
+Reading messages... (press Ctrl-C to quit)
+1) "subscribe"
+2) "channel1"
+3) (integer) 1
+
+
+
+
+1) "message"
+2) "channel1"
+3) "this is a new test"
+1) "message"
+2) "channel1"
+3) "this is a second  test"
+</code></pre></div></div>
+
+<p>go操作示例，示例中将使用两个goroutine分别担任发布者和订阅者角色进行演示：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"github.com/garyburd/redigo/redis"</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"time"</span>
+<span class="p">)</span>
+
+<span class="n">func</span> <span class="n">Subs</span><span class="p">()</span> <span class="p">{</span>  <span class="p">//</span><span class="err">订阅者</span>
+	<span class="n">conn</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span> <span class="s2">"10.1.210.69:6379"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"connect redis error :"</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">conn</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="n">psc</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">PubSubConn</span><span class="p">{</span><span class="n">conn</span><span class="p">}</span>
+	<span class="n">psc</span><span class="p">.</span><span class="n">Subscribe</span><span class="p">(</span><span class="s2">"channel1"</span><span class="p">)</span> <span class="p">//</span><span class="err">订阅</span><span class="n">channel1</span><span class="err">频道</span>
+	<span class="n">for</span> <span class="p">{</span>
+		<span class="n">switch</span> <span class="n">v</span> <span class="p">:=</span> <span class="n">psc</span><span class="p">.</span><span class="n">Receive</span><span class="p">().(</span><span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">case</span> <span class="n">redis</span><span class="p">.</span><span class="n">Message</span><span class="p">:</span>
+			<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s: message: %s</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Channel</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Data</span><span class="p">)</span>
+		<span class="k">case</span> <span class="n">redis</span><span class="p">.</span><span class="n">Subscription</span><span class="p">:</span>
+			<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"%s: %s %d</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Channel</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">Kind</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="k">Count</span><span class="p">)</span>
+		<span class="k">case</span> <span class="n">error</span><span class="p">:</span>
+			<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+			<span class="n">return</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">Push</span><span class="p">(</span><span class="n">message</span> <span class="k">string</span><span class="p">)</span>  <span class="p">{</span> <span class="p">//</span><span class="err">发布者</span>
+	<span class="n">conn</span><span class="p">,</span> <span class="n">_</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span> <span class="s2">"10.1.210.69:6379"</span><span class="p">)</span>
+	<span class="n">_</span><span class="p">,</span><span class="n">err1</span> <span class="p">:=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"PUBLISH"</span><span class="p">,</span> <span class="s2">"channel1"</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+	   <span class="k">if</span> <span class="n">err1</span> <span class="c1">!= nil {
+</span>			 <span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"pub err: "</span><span class="p">,</span> <span class="n">err1</span><span class="p">)</span>
+				 <span class="n">return</span>
+			<span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">go</span> <span class="n">Subs</span><span class="p">()</span>
+	<span class="n">go</span> <span class="n">Push</span><span class="p">(</span><span class="s2">"this is wd"</span><span class="p">)</span>
+	<span class="n">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">*</span><span class="m">3</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="p">//</span><span class="n">channel1</span><span class="p">:</span> <span class="n">subscribe</span> <span class="m">1</span>
+<span class="p">//</span><span class="n">channel1</span><span class="p">:</span> <span class="n">message</span><span class="p">:</span> <span class="n">this</span> <span class="n">is</span> <span class="n">wd</span>
+</code></pre></div></div>
+
+<p><strong>事务操作</strong></p>
+
+<p>MULTI, EXEC,DISCARD和WATCH是构成Redis事务的基础，当然我们使用go语言对redis进行事务操作的时候本质也是使用这些命令。</p>
+
+<p>MULTI：开启事务</p>
+
+<p>EXEC：执行事务</p>
+
+<p>DISCARD：取消事务</p>
+
+<p>WATCH：监视事务中的键变化，一旦有改变则取消事务。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+<span class="s2">"github.com/garyburd/redigo/redis"</span>
+<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+	<span class="n">conn</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span><span class="s2">"10.1.210.69:6379"</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!= nil {
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"connect redis error :"</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+		<span class="n">return</span>
+	<span class="p">}</span>
+	<span class="n">defer</span> <span class="n">conn</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="n">conn</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="s2">"MULTI"</span><span class="p">)</span>
+	<span class="n">conn</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="s2">"INCR"</span><span class="p">,</span> <span class="s2">"foo"</span><span class="p">)</span>
+	<span class="n">conn</span><span class="p">.</span><span class="nf">Send</span><span class="p">(</span><span class="s2">"INCR"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">)</span>
+	<span class="n">r</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"EXEC"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="p">//[</span><span class="m">1</span><span class="p">,</span> <span class="m">1</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p><strong>连接池使用</strong></p>
+
+<p>redis连接池是通过pool结构体实现</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"github.com/garyburd/redigo/redis"</span>
+	<span class="s2">"fmt"</span>
+<span class="p">)</span>
+
+<span class="n">var</span> <span class="n">Pool</span> <span class="n">redis</span><span class="p">.</span><span class="n">Pool</span>
+<span class="n">func</span> <span class="n">init</span><span class="p">()</span>  <span class="p">{</span>      <span class="p">//</span><span class="n">init</span> <span class="err">用于初始化一些参数，先于</span><span class="n">main</span><span class="err">执行</span>
+	<span class="n">Pool</span> <span class="p">=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Pool</span><span class="p">{</span>
+		<span class="n">MaxIdle</span><span class="p">:</span>     <span class="m">16</span><span class="p">,</span>
+		<span class="n">MaxActive</span><span class="p">:</span>   <span class="m">32</span><span class="p">,</span>
+		<span class="n">IdleTimeout</span><span class="p">:</span> <span class="m">120</span><span class="p">,</span>
+		<span class="n">Dial</span><span class="p">:</span> <span class="n">func</span><span class="p">()</span> <span class="p">(</span><span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">return</span> <span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span> <span class="s2">"10.1.210.69:6379"</span><span class="p">)</span>
+		<span class="p">},</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">()</span>  <span class="p">{</span>
+
+	<span class="n">conn</span> <span class="p">:=</span><span class="n">Pool</span><span class="p">.</span><span class="n">Get</span><span class="p">()</span>
+	<span class="n">res</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HSET"</span><span class="p">,</span><span class="s2">"student"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"jack"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">res</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+	<span class="n">res1</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HGET"</span><span class="p">,</span><span class="s2">"student"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span><span class="s2">"res:%s,error:%v"</span><span class="p">,</span><span class="n">res1</span><span class="p">,</span><span class="n">err</span><span class="p">)</span>
+
+<span class="p">}</span>
+<span class="p">//</span><span class="m">0</span> <span class="p">&lt;</span><span class="n">nil</span><span class="p">&gt;</span>
+<span class="p">//</span><span class="n">res</span><span class="p">:</span><span class="n">jack</span><span class="p">,</span><span class="n">error</span><span class="p">:&lt;</span><span class="n">nil</span><span class="p">&gt;</span>
+</code></pre></div></div>
+
+<p><a href="https://www.jianshu.com/p/aeb27a6aa42d">https://www.jianshu.com/p/aeb27a6aa42d</a></p>
+
+<p><a href="https://www.cnblogs.com/wdliu/p/9330278.html">https://www.cnblogs.com/wdliu/p/9330278.html</a></p>
+
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80ioutil-exec-os%E5%8C%85%E7%9A%84%E4%BD%BF%E7%94%A8/" data-toggle="tooltip" data-placement="top" title="Go 语言io/ioutil,os,exec包使用">上一篇：  <span>Go 语言io/ioutil,os,exec包使用</span>
+            </a>
+        </li>
+        
+        
+        <li class="next">
+            <a href="/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8mysql%E6%95%B0%E6%8D%AE%E5%BA%93/" data-toggle="tooltip" data-placement="top" title="Go语言使用mysql数据库">下一篇：  <span>Go语言使用mysql数据库</span>
+            </a>
+        </li>
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>

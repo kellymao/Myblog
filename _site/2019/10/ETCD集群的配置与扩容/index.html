@@ -6,17 +6,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <title>Go 语言命令行参数</title>
-  <meta name="description" content="Go 语言命令行参数">
+  <title>ETCD集群的配置与扩容</title>
+  <meta name="description" content="ETCD集群的配置与扩容">
   <meta name="author" content="leopardpan">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Go 语言命令行参数">
-  <meta name="twitter:description" content="Go 语言命令行参数">
+  <meta name="twitter:title" content="ETCD集群的配置与扩容">
+  <meta name="twitter:description" content="ETCD集群的配置与扩容">
   
   <meta property="og:type" content="article">
-  <meta property="og:title" content="Go 语言命令行参数">
-  <meta property="og:description" content="Go 语言命令行参数">
+  <meta property="og:title" content="ETCD集群的配置与扩容">
+  <meta property="og:description" content="ETCD集群的配置与扩容">
   
   <link rel="icon" type="image/png" href="/images/favicon.png" />
   <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="/css/main.css">
   <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
-  <link rel="canonical" href="http://0.0.0.0:9000/2019/09/Go%E8%AF%AD%E8%A8%80%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0/">
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/10/ETCD%E9%9B%86%E7%BE%A4%E7%9A%84%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%89%A9%E5%AE%B9/">
   <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
   
   <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
@@ -156,10 +156,10 @@
         <div class="content-wrapper__inner">
             <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
   <header class="post-header">
-    <h1 class="post-title">Go 语言命令行参数</h1>
+    <h1 class="post-title">ETCD集群的配置与扩容</h1>
     <div class="post-meta">
       <img src="/images/calendar.png" width="20px"/> 
-      <time datetime="2019-09-11 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-09-11</time>  
+      <time datetime="2019-10-14 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-10-14</time>  
          
       <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
     </p>
@@ -167,83 +167,219 @@
   </header>
 
   <section class="post">
-    <h2 id="go-语言命令行参数">Go 语言命令行参数</h2>
+    <h2 id="etcd集群的配置与扩容">ETCD集群的配置与扩容</h2>
 
-<p><br /></p>
+<p><strong>目标：组建3台节点的etcd集群</strong></p>
 
-<h3 id="osargs-使用">os.Args 使用</h3>
+<p><strong>节点信息：</strong></p>
 
-<p><br /></p>
+<p>node0	10.211.55.9</p>
 
-<p>os.Args 是一个string 的切片，用来存储所有的命令行参数</p>
+<p>node1	10.211.55.10</p>
 
-<p><strong>一个参数都不传，就是包含一个元素的切片，即自己的文件全路径</strong></p>
+<p>node2	10.211.55.11</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>func main(){
+<p><strong>一. 准备工作：</strong></p>
 
+<p>1.关闭并停用防火墙</p>
 
-	fmt.Println("len of args:%d\n",len(os.Args)) 
-	
-	for i,v := range os.Args{
-	
-		fmt.Println("args[%d]=%s\n",i,v) 
-	}
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl stop firewalld.service 
 
-
-}
-
-//调用  ./bin/flag -c n1 -e cnf 
+systemctl disable firewalld.service
 </code></pre></div></div>
 
-<p><br /></p>
+<p>2.永久关闭SELinux</p>
 
-<h3 id="flag-包使用用来解析命令行参数">flag 包使用，用来解析命令行参数</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim /etc/selinux/config 
 
-<p><br /></p>
-
-<p>常用的参数：</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flag.BoolVar(&amp;test,"b",false,"print new line")
-flag.StringVar(&amp;var,"s","","print new string") 
-flag.StringVar(&amp;confpath,"cnf","","please input config path")
-flag.IntVar(&amp;loglevel,"l",0,"please input loglevel") 	
+SELINUX=disabled
 </code></pre></div></div>
 
-<p><br /></p>
+<p>3.同步集群系统时间</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import "fmt"
-import "flag" 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum -y install ntp
 
-func main(){
-
-	var confpath string 
-	var loglevel int 
-	
-	flag.StringVar(&amp;confpath,"cnf","","please input config path")
-	
-	flag.IntVar(&amp;loglevel,"l",0,"please input loglevel") 
-	
-	flag.Parse() // 使处理生效 
-	
-	fmt.Println("path:",confpath)
-	fmt.Println("log level:",loglevel) 
-
-
-
-}
-
-/*
-
-执行的结果：
-root@pts/1 # ./exmaple-flag -cnf /etc/my.cnf -l  1
-path: /etc/my.cnf
-log level: 1
-
-*/
+ntpdate 0.asia.pool.ntp.org
 </code></pre></div></div>
 
-<p><br /></p>
+<p>4.重启机器</p>
 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>reboot
+</code></pre></div></div>
+
+<p><strong>二.安装与配置参数：</strong></p>
+
+<p>安装ETCD：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum -y install etcd (由于是rpm包所以可以用remove卸载)
+</code></pre></div></div>
+
+<p>配置工作目录：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir /ETCD
+
+cd /ETCD
+
+mkdir data (用于放置数据，清除该文件夹内容，相当于重置集群)
+
+mkdir log  (用于输出日志)
+</code></pre></div></div>
+
+<p>编写启动与重启脚本：</p>
+
+<p>1启动脚本(build.sh)：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+etcd <span class="nt">--name</span> node1 <span class="se">\</span>
+
+<span class="nt">--data-dir</span> /ETCD/data/ <span class="se">\</span>
+
+<span class="nt">--listen-peer-urls</span> http://10.211.55.10:2380 <span class="se">\</span>
+
+<span class="nt">--listen-client-urls</span> http://10.211.55.10:2379,http://127.0.0.1:2379 <span class="se">\</span>
+
+<span class="nt">--initial-advertise-peer-urls</span> http://10.211.55.10:2380 <span class="se">\</span>
+
+<span class="nt">--advertise-client-urls</span> http://10.211.55.10:2379 <span class="se">\</span>
+
+<span class="nt">--initial-cluster</span> <span class="nv">node0</span><span class="o">=</span>http://10.211.55.9:2380,node1<span class="o">=</span>http://10.211.55.10:2380,node2<span class="o">=</span>http://10.211.55.11:2380 <span class="se">\</span>
+
+<span class="nt">--initial-cluster-token</span> Achilles <span class="se">\</span>
+
+<span class="nt">--initial-cluster-state</span> new
+</code></pre></div></div>
+
+<p>2重启脚本(restart.sh)：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcd --name node1 \
+
+--data-dir /ETCD/data/ \
+
+--listen-peer-urls http://10.211.55.10:2380 \
+
+--listen-client-urls http://10.211.55.10:2379,http://127.0.0.1:2379 \
+
+--advertise-client-urls http://10.211.55.10:2379 \
+</code></pre></div></div>
+
+<p>注意：为了方便管理，我将两个脚本都放置于/ETCD目录下，启动脚本build.sh只在集群第一次初始化时启用，节点掉线恢复均使用restart.sh</p>
+
+<p>更改脚本的执行权限：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>chmod +x ./build.sh
+
+chmod +x ./restart.sh
+</code></pre></div></div>
+
+<p>每台节点均执行以上操作后，分别启动build.sh脚本：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nohup ./build.sh &gt; /ETCD/log/etcd.log 2&gt;&amp;1 &amp;
+
+该命令表示后台执行，并且将日志输出至“/ETCD/log/etcd.log”
+</code></pre></div></div>
+
+<p>此时，3节点的etcd集群已建立，执行健康检查：</p>
+
+<p>健康检查：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl cluster-health
+</code></pre></div></div>
+
+<p>节点掉线或者重启，则执行相应节点的restart.sh脚本：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nohup ./restart.sh &gt; /ETCD/log/etcd.log 2&gt;&amp;1 &amp;
+</code></pre></div></div>
+
+<p><strong>三.增减成员节点：</strong></p>
+
+<p>新增节点(例如10.211.55.12)</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>在集群任意节点输入：
+
+etcdctl member add http://10.211.55.12:2380
+
+命令行返回：
+
+added member 9bf1b35fc7761a23 to cluster
+
+ETCD_NAME="node3"
+
+ETCD_INITIAL_CLUSTER="node0=http://10.211.55.9:2380,node1=http://10.211.55.10:2380,node2=http://10.211.55.11:2380,node3=http://10.211.55.12:2380"
+
+ETCD_INITIAL_CLUSTER_STATE=existing
+
+其中ETCD_INITIAL_CLUSTER是最为重要的信息，记录了集群成员。
+
+编写新增节点脚本：
+
+#!/bin/bash
+
+etcd --name node3 \
+
+--data-dir /ETCD/data/ \
+
+--listen-peer-urls http://10.211.55.12:2380 \
+
+--listen-client-urls http://10.211.55.12:2379,http://127.0.0.1:2379 \
+
+--initial-advertise-peer-urls http://10.211.55.12:2380 \
+
+--advertise-client-urls http://10.211.55.12:2379 \
+
+--initial-cluster node0=http://10.211.55.9:2380,node1=http://10.211.55.10:2380,node2=http://10.211.55.11:2380,node3=http://10.211.55.12:2380 \
+
+--initial-cluster-token Achilles \
+
+--initial-cluster-state existing
+
+可以发现，新增脚本与启动脚本的区别仅在于--initial-cluster参数多了新增节点的ip:port，--initial-cluster-state参数表示集群状态，existing表示加入一个已存在的集群，如果填new，该脚本会新生成一个集群ID，产生冲突。
+
+执行新增脚本，新节点加入集群。
+</code></pre></div></div>
+
+<p>删除节点：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl member remove 节点ID
+
+删除节点的etcd服务会自动停止，若要将其加入其他集群，需要先清除/ETCD/data下的数据内容。
+</code></pre></div></div>
+
+<p>备份数据：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>etcdctl backup --data-dir /ETCD/data/ --backup-dir /backup/etcd
+</code></pre></div></div>
+
+<p><strong>四.总结：</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ETCD集群的操作分两个阶段，即启动与运行阶段，启动阶段的集群有3种配置方式，
+</code></pre></div></div>
+
+<p><strong>静态配置</strong></p>
+
+<p>etcd自发现模式</p>
+
+<p>DNS自发现模式</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>本文采用的是静态配置，etcd自发现模式与静态配置的区别在于静态模式预先知道所有节点的ip信息，而etcd自发现则不用，
+
+配置方法与静态配置类似，仅仅将启动脚本build.sh中--initial-cluster参数去掉，新增：
+</code></pre></div></div>
+
+<p>–discovery https://discovery.etcd.io/964f7149b939aa1199536505cc88eacc \</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>其中，discovery参数的获取方法：
+
+curl https://discovery.etcd.io/new?size=3
+
+返回 https://discovery.etcd.io/f1b620b986fae36fc2994c06c00e30ed
+
+两种启动方法的运行阶段操作基本一致，DNS发现模式暂且不表。
+</code></pre></div></div>
+
+<p>转自：</p>
+
+<p><a href="https://blog.csdn.net/foreverdingleo/article/details/79745001">https://blog.csdn.net/foreverdingleo/article/details/79745001</a></p>
 
 
   </section>
@@ -313,13 +449,13 @@ log level: 1
        <ul class="pager">
         
         <li class="previous">
-            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80json%E5%BA%8F%E5%88%97%E5%8C%96/" data-toggle="tooltip" data-placement="top" title="Go 语言json序列化">上一篇：  <span>Go 语言json序列化</span>
+            <a href="/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8mysql%E6%95%B0%E6%8D%AE%E5%BA%93/" data-toggle="tooltip" data-placement="top" title="Go语言使用mysql数据库">上一篇：  <span>Go语言使用mysql数据库</span>
             </a>
         </li>
         
         
         <li class="next">
-            <a href="/2019/09/Go%E8%AF%AD%E8%A8%80%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" data-toggle="tooltip" data-placement="top" title="Go 语言socket编程">下一篇：  <span>Go 语言socket编程</span>
+            <a href="/2019/10/etcd%E5%AE%89%E8%A3%85/" data-toggle="tooltip" data-placement="top" title="etcd 集群部署（centos7）">下一篇：  <span>etcd 集群部署（centos7）</span>
             </a>
         </li>
         
