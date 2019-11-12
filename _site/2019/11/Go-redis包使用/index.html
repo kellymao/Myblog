@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Go 语言链接redis操作</title>
+  <meta name="description" content="Go 语言链接redis">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Go 语言链接redis操作">
+  <meta name="twitter:description" content="Go 语言链接redis">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Go 语言链接redis操作">
+  <meta property="og:description" content="Go 语言链接redis">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://0.0.0.0:9000/2019/11/Go-redis%E5%8C%85%E4%BD%BF%E7%94%A8/">
+  <link rel="alternate" type="application/rss+xml" title="Mao" href="http://0.0.0.0:9000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="about" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Mao 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                maomao
+                            
+                        </h2>
+                        <p>
+                           
+                                MongoDB / MySQL
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Mao" class="blog-button">Mao</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">欢迎来到我的个人站~</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="about">关于我</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Go 语言链接redis操作</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-11-09 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-11-09</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="go-语言链接redis">Go 语言链接redis</h2>
+
+<p><br /></p>
+
+<p>安装</p>
+
+<p>Go语言中使用第三方库https://github.com/go-redis/redis连接Redis数据库并进行操作。使用以下命令下载并安装:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get -u github.com/go-redis/redis
+</code></pre></div></div>
+
+<p>创建客户端：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// 声明一个全局的redisdb变量
+var redisdb *redis.Client
+
+// 初始化连接
+func initClient() (err error) {
+	redisdb = redis.NewClient(&amp;redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	_, err = redisdb.Ping().Result() // Pong 
+	if err != nil {
+		return err
+	}
+	return nil
+}
+</code></pre></div></div>
+
+<p>完整的例子：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="n">import</span> <span class="s2">"fmt"</span>
+<span class="n">import</span> <span class="s2">"github.com/garyburd/redigo/redis"</span>
+<span class="n">import</span> <span class="s2">"time"</span>
+<span class="n">import</span> <span class="s2">"encoding/json"</span>
+
+<span class="n">import</span> <span class="s2">"reflect"</span>
+
+<span class="n">func</span> <span class="n">process_err</span><span class="p">(</span><span class="n">err</span> <span class="n">error</span><span class="p">){</span>
+
+	<span class="k">if</span> <span class="n">err</span> <span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="p">}</span>
+
+
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">json_to_redis</span><span class="p">(</span><span class="n">conn</span> <span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">){</span>
+
+	<span class="n">val</span> <span class="p">:=</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span><span class="p">{</span><span class="s2">"name"</span><span class="p">:</span><span class="s2">"zhangsan"</span><span class="p">,</span>
+		<span class="s2">"age"</span><span class="p">:</span><span class="s2">"10"</span><span class="p">,</span>
+		<span class="p">}</span>
+
+	<span class="n">v</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">json</span><span class="p">.</span><span class="n">Marshal</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="n">n</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"set"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="n">int64</span><span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"success"</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>  <span class="p">//</span> <span class="n">OK</span> <span class="k">string</span>
+	<span class="n">rel</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Bytes</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"get"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">))</span>
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>  <span class="p">//</span> <span class="p">[</span><span class="m">123</span> <span class="m">34</span> <span class="m">97</span> <span class="m">103</span> <span class="m">101</span> <span class="m">34</span> <span class="m">58</span> <span class="m">34</span> <span class="p">]</span>
+
+
+	<span class="n">var</span> <span class="n">r</span> <span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span> <span class="p">=</span> <span class="n">make</span><span class="p">(</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span><span class="p">)</span>
+
+	<span class="n">err</span><span class="p">=</span> <span class="n">json</span><span class="p">.</span><span class="n">Unmarshal</span><span class="p">(</span><span class="n">rel</span><span class="p">,&amp;</span><span class="n">r</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>        <span class="p">//</span> <span class="n">map</span><span class="p">[</span><span class="n">age</span><span class="p">:</span><span class="m">10</span> <span class="n">name</span><span class="p">:</span><span class="n">zhangsan</span><span class="p">]</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span>  <span class="p">//</span> <span class="n">zhangsan</span>
+
+
+
+
+
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">list_operate</span><span class="p">(</span><span class="n">conn</span> <span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">){</span>
+
+	<span class="n">n</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"lpush"</span><span class="p">,</span><span class="s2">"dblist"</span><span class="p">,</span><span class="s2">"mysql"</span><span class="p">,</span><span class="s2">"oracle"</span><span class="p">,</span><span class="s2">"mongo"</span><span class="p">,</span><span class="s2">"中国"</span><span class="p">,</span><span class="s2">"test"</span><span class="p">)</span>
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="p">//</span><span class="m">7</span>
+
+	<span class="n">rel</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"lpop"</span><span class="p">,</span><span class="s2">"dblist"</span><span class="p">))</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span> <span class="p">//</span> <span class="n">mongo</span>
+
+	<span class="n">relrange</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Values</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"lrange"</span><span class="p">,</span><span class="s2">"dblist"</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">))</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">relrange</span><span class="p">))</span>  <span class="p">//</span> <span class="p">[]</span><span class="n">interface</span> <span class="p">{}</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">relrange</span> <span class="p">{</span>
+
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="p">//[]</span><span class="n">uint8</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">.([]</span><span class="n">byte</span><span class="p">))</span> <span class="p">//</span> <span class="p">[</span><span class="m">111</span> <span class="m">114</span> <span class="m">97</span> <span class="m">99</span> <span class="m">108</span> <span class="m">101</span><span class="p">]</span> <span class="err">通过接口的断言来转换类型</span>
+
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">.([]</span><span class="n">byte</span><span class="p">)))</span> <span class="p">//</span> <span class="n">mongo</span>
+
+
+	<span class="p">}</span>
+
+
+
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">hash_operate</span><span class="p">(</span><span class="n">conn</span> <span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">){</span>
+
+	<span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hmset"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="s2">"val1"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">,</span><span class="m">10</span><span class="p">)</span>
+
+	<span class="n">rel</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hget"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">rel</span><span class="p">))</span> <span class="p">//</span> <span class="p">[]</span><span class="n">uint8</span>
+
+	<span class="n">c_rel</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hget"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel</span><span class="p">)</span> <span class="p">//</span> <span class="n">val1</span>
+
+	<span class="n">c_rel1</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Int64</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hget"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel1</span><span class="p">)</span> <span class="p">//</span> <span class="m">10</span>
+
+	<span class="n">rel2</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMGET"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">rel2</span><span class="p">))</span>  <span class="p">//</span> <span class="p">[]</span><span class="n">interface</span> <span class="p">{}</span>
+
+
+	<span class="n">c_rel2</span><span class="p">,</span><span class="n">_</span> <span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Strings</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMGET"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel2</span><span class="p">)</span>  <span class="p">//</span> <span class="p">[</span><span class="n">val1</span> <span class="m">10</span><span class="p">]</span>
+
+
+	<span class="n">rel3</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hgetall"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">)</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">rel3</span><span class="p">))</span> <span class="p">//</span> <span class="p">[]</span><span class="n">interface</span> <span class="p">{}</span>
+
+	<span class="n">c_rel3</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Values</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hgetall"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel3</span><span class="p">)</span> <span class="p">//</span> <span class="p">[[</span><span class="m">107</span> <span class="m">101</span> <span class="m">121</span> <span class="m">49</span><span class="p">]</span> <span class="p">[</span><span class="m">118</span> <span class="m">97</span> <span class="m">108</span> <span class="m">49</span><span class="p">]</span> <span class="p">[</span><span class="m">107</span> <span class="m">101</span> <span class="m">121</span> <span class="m">50</span><span class="p">]</span> <span class="p">[</span><span class="m">49</span> <span class="m">48</span><span class="p">]]</span>
+
+	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">c_rel3</span><span class="p">{</span>
+
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">.([]</span><span class="n">byte</span><span class="p">)))</span>
+		<span class="p">/*</span>
+		<span class="n">key1</span>
+		<span class="n">val1</span>
+		<span class="n">key2</span>
+		<span class="m">10</span>
+
+		 <span class="p">*/</span>
+	<span class="p">}</span>
+
+	<span class="n">c_rel5</span> <span class="p">,</span><span class="n">_</span><span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Strings</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hgetall"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">))</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel5</span><span class="p">)</span> <span class="p">//</span> <span class="p">[</span><span class="n">key1</span> <span class="n">val1</span> <span class="n">key2</span> <span class="m">10</span><span class="p">]</span>
+
+
+<span class="p">}</span>
+
+<span class="n">func</span> <span class="n">main</span><span class="p">(){</span>
+
+	<span class="n">conn</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span><span class="s2">"127.0.0.1:6379"</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">defer</span> <span class="n">conn</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+
+	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"set"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"wd"</span><span class="p">,</span><span class="s2">"ex"</span><span class="p">,</span><span class="m">5</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">username</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"GET"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">))</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"expire"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"35"</span><span class="p">)</span>
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">_</span> <span class="p">,</span><span class="n">err</span> <span class="p">=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HSET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">,</span><span class="s2">"mao"</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMSET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">,</span><span class="s2">"maomao"</span><span class="p">,</span><span class="s2">"user2"</span><span class="p">,</span><span class="s2">"zhangsan"</span><span class="p">,</span><span class="s2">"user3"</span><span class="p">,</span><span class="s2">"wangwu"</span><span class="p">)</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+
+	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"expire"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="m">30</span><span class="p">)</span>
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">hashuser</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HGET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">))</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">hashuser</span><span class="p">)</span>
+
+	<span class="n">hashusers</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Strings</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMGET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">,</span><span class="s2">"user2"</span><span class="p">))</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span> <span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">hashusers</span><span class="p">))</span>  <span class="p">//[]</span><span class="k">string</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">hashusers</span><span class="p">)</span>                   <span class="p">//</span> <span class="p">[</span><span class="n">maomao</span> <span class="n">zhangsan</span><span class="p">]</span>
+
+	<span class="n">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="m">3</span> <span class="p">*</span> <span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">)</span>
+
+	<span class="n">is_exist</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Bool</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"exists"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">))</span>
+
+	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">is_exist</span><span class="p">)</span>
+
+	<span class="n">json_to_redis</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
+	<span class="n">list_operate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
+	<span class="n">hash_operate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
+<span class="p">}</span>	
+</code></pre></div></div>
+
+<p>参考：</p>
+
+<p><a href="https://blog.csdn.net/u010649766/article/details/79623972">https://blog.csdn.net/u010649766/article/details/79623972</a>	
+<a href="https://www.liwenzhou.com/posts/Go/go_redis/">https://www.liwenzhou.com/posts/Go/go_redis/</a></p>
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="" class="dashang" title="">谢谢</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/10/Go%E8%AF%AD%E8%A8%80%E4%BD%BF%E7%94%A8etcd%E5%BA%93/" data-toggle="tooltip" data-placement="top" title="Go语言使用etcd库">上一篇：  <span>Go语言使用etcd库</span>
+            </a>
+        </li>
+        
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+	  <!--
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+ 	  -->	
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Mao 2019 Theme by <a href="https://kellymao.github.io/#blog">xiaomao</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+	    >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>
