@@ -203,208 +203,397 @@ func initClient() (err error) {
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
 
-<span class="n">import</span> <span class="s2">"fmt"</span>
-<span class="n">import</span> <span class="s2">"github.com/garyburd/redigo/redis"</span>
-<span class="n">import</span> <span class="s2">"time"</span>
-<span class="n">import</span> <span class="s2">"encoding/json"</span>
+<span class="n">import</span> <span class="p">(</span>
+	<span class="s2">"fmt"</span>
+	<span class="s2">"github.com/go-redis/redis"</span>
+	<span class="s2">"sync"</span>
+	<span class="s2">"time"</span>
+<span class="p">)</span>
 
-<span class="n">import</span> <span class="s2">"reflect"</span>
 
-<span class="n">func</span> <span class="n">process_err</span><span class="p">(</span><span class="n">err</span> <span class="n">error</span><span class="p">){</span>
+<span class="n">var</span> <span class="n">redisdb</span> <span class="p">*</span><span class="n">redis</span><span class="p">.</span><span class="n">Client</span>
 
-	<span class="k">if</span> <span class="n">err</span> <span class="c1">!=nil{
+<span class="p">//</span> <span class="err">创建</span><span class="n">redis</span> <span class="err">客户端连接</span>
+<span class="n">func</span> <span class="n">init_redis</span><span class="p">()</span> <span class="n">error</span> <span class="p">{</span>
+
+	<span class="n">redisdb</span> <span class="p">=</span> <span class="n">redis</span><span class="p">.</span><span class="n">NewClient</span><span class="p">(</span>
+
+		<span class="p">&amp;</span><span class="n">redis</span><span class="p">.</span><span class="k">Options</span><span class="p">{</span>
+			<span class="n">Addr</span><span class="p">:</span>     <span class="s2">"localhost:6379"</span><span class="p">,</span>
+			<span class="n">Password</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+			<span class="n">DB</span><span class="p">:</span>       <span class="m">0</span><span class="p">,</span>
+			<span class="n">PoolSize</span><span class="p">:</span> <span class="m">5</span><span class="p">,</span>
+		<span class="p">},</span>
+
+		<span class="p">)</span>
+
+
+	<span class="n">_</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">Ping</span><span class="p">().</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">return</span> <span class="n">err</span>
+
+	<span class="p">}</span>
+
+	<span class="n">return</span> <span class="n">nil</span>
+
+
+
+
+<span class="p">}</span>
+
+<span class="p">//</span>  <span class="k">String</span> <span class="err">操作</span>
+
+<span class="n">func</span> <span class="n">op_string</span><span class="p">(){</span>
+
+	<span class="p">//</span> <span class="m">0</span> <span class="err">表示不过期</span>
+
+	<span class="n">err</span> <span class="p">:=</span> <span class="n">redisdb</span><span class="p">.</span><span class="k">Set</span><span class="p">(</span><span class="s2">"why"</span><span class="p">,</span><span class="s2">"not"</span><span class="p">,</span><span class="m">0</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"set 失败"</span><span class="p">)</span>
+
+	<span class="p">}</span>
+
+	<span class="p">//</span> <span class="err">设置</span><span class="n">name</span> <span class="err">一秒钟过期</span>
+
+	<span class="n">err</span><span class="p">=</span><span class="n">redisdb</span><span class="p">.</span><span class="k">Set</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"zhangsan"</span><span class="p">,</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"set 失败"</span><span class="p">)</span>
+
+
+	<span class="p">}</span>
+
+
+	<span class="n">val</span> <span class="p">,</span><span class="n">err</span><span class="p">:=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"get 失败"</span><span class="p">)</span>
+
+
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"第一次取name "</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+
+	<span class="n">err</span><span class="p">=</span><span class="n">redisdb</span><span class="p">.</span><span class="k">Set</span><span class="p">(</span><span class="s2">"age"</span><span class="p">,</span><span class="m">17</span><span class="p">,</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"set age 失败"</span><span class="p">)</span>
+
+
+	<span class="p">}</span>
+
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">Incr</span><span class="p">(</span><span class="s2">"age"</span><span class="p">)</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">Incr</span><span class="p">(</span><span class="s2">"age"</span><span class="p">)</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">Incr</span><span class="p">(</span><span class="s2">"age"</span><span class="p">)</span>  <span class="p">//</span> <span class="err">自增</span>
+
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">Decr</span><span class="p">(</span><span class="s2">"age"</span><span class="p">)</span>
+
+	<span class="n">age</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s2">"age"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"get 失败"</span><span class="p">)</span>
+
+
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">age</span><span class="p">)</span>
+
+	<span class="n">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span> <span class="p">*</span> <span class="m">2</span><span class="p">)</span>
+
+	<span class="n">val</span> <span class="p">,</span><span class="n">err</span><span class="p">=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"get name失败"</span><span class="p">,</span><span class="n">err</span><span class="p">.</span><span class="n">Error</span><span class="p">())</span>  <span class="p">//</span> <span class="err">过期了</span> <span class="err">报错</span> <span class="n">redis</span><span class="p">:</span> <span class="n">nil</span>
+
+
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"第二次取name "</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+
+<span class="p">/*</span>
+   <span class="err">第一次取</span><span class="n">name</span>  <span class="n">zhangsan</span>
+   <span class="m">19</span>
+   <span class="n">get</span> <span class="n">name</span><span class="err">失败</span> <span class="n">redis</span><span class="p">:</span> <span class="n">nil</span>
+   <span class="err">第二次取</span><span class="n">name</span>
+<span class="p">*/</span>
+
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="k">List</span> <span class="err">操作</span>
+
+<span class="n">func</span> <span class="n">op_list</span><span class="p">(){</span>
+
+	<span class="p">//</span> <span class="err">在名称为</span> <span class="n">fruit</span> <span class="err">的</span><span class="n">list</span><span class="err">头添加一个值为</span><span class="n">apple</span><span class="err">的</span> <span class="err">元素</span>
+	<span class="n">val</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">LPush</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">,</span><span class="s2">"apple"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
 </span>
-		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-		<span class="n">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"LPush 失败"</span><span class="p">)</span>
 	<span class="p">}</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+
+
+	<span class="p">//</span> <span class="err">在名称为</span> <span class="n">fruit</span> <span class="err">的</span><span class="n">list</span><span class="err">尾添加一个值为</span><span class="n">huolongguo</span><span class="err">的元素</span>
+	<span class="n">err</span> <span class="p">=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">RPush</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">,</span><span class="s2">"huolongguo"</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"RPush 失败"</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="p">//</span> <span class="err">在名称为</span> <span class="n">fruit</span> <span class="err">的</span><span class="n">list</span><span class="err">头添加一个值为</span><span class="n">banana</span><span class="err">的</span> <span class="err">元素</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">LPush</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">,</span><span class="s2">"banana"</span><span class="p">)</span>
+
+	<span class="p">//</span> <span class="err">返回名称为</span> <span class="n">fruit</span> <span class="err">的</span><span class="n">list</span><span class="err">的长度</span>
+	<span class="n">list_len</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">LLen</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"LLen 失败"</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"列表fruit的长度："</span><span class="p">,</span><span class="n">list_len</span><span class="p">)</span>
+
+
+	<span class="p">//</span> <span class="err">获取列表的值，返回一个</span> <span class="n">string</span><span class="err">的切片</span>
+	<span class="n">valstr</span><span class="p">,</span> <span class="n">err</span> <span class="p">:=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">LRange</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="p">-</span><span class="m">1</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"lrange 失败"</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valstr</span><span class="p">)</span>
+
+	<span class="p">//</span> <span class="err">返回并删除名称为</span> <span class="n">fruit</span> <span class="err">的</span><span class="n">list</span><span class="err">中的尾元素</span>
+
+	<span class="n">popval</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">RPop</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"rpop 失败"</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">popval</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">获取列表的值，返回一个</span> <span class="n">string</span><span class="err">的切片</span>
+	<span class="n">valstr</span><span class="p">,</span> <span class="n">err</span> <span class="p">=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">LRange</span><span class="p">(</span><span class="s2">"fruit"</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="p">-</span><span class="m">1</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"lrange 失败"</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valstr</span><span class="p">)</span>
+
+
+<span class="p">/*</span>
+
+   <span class="m">1</span>
+   <span class="err">列表</span><span class="n">fruit</span><span class="err">的长度：</span> <span class="m">3</span>
+   <span class="p">[</span><span class="n">banana</span> <span class="n">apple</span> <span class="n">huolongguo</span><span class="p">]</span>
+   <span class="n">huolongguo</span>
+   <span class="p">[</span><span class="n">banana</span> <span class="n">apple</span><span class="p">]</span>
+ <span class="p">*/</span>
+<span class="p">}</span>
+
+<span class="p">//</span> <span class="k">set</span> <span class="err">操作</span>
+
+<span class="n">func</span> <span class="n">set_list</span><span class="p">(){</span>
+
+
+	<span class="p">//</span> <span class="err">向</span> <span class="n">fruitset</span> <span class="err">中添加元素</span>
+	<span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">SAdd</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">,</span><span class="s2">"apple"</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>
+		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"sadd 失败"</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">SAdd</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">,</span><span class="s2">"banana"</span><span class="p">)</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">SAdd</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">,</span><span class="s2">"huolongguo"</span><span class="p">)</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">SAdd</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">,</span><span class="s2">"xihongshi"</span><span class="p">)</span>
+
+
+	<span class="p">//</span> <span class="err">获取指定集合的所有元素</span>
+	<span class="n">fruitset</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">SMembers</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"水果的集合:"</span><span class="p">,</span><span class="n">fruitset</span><span class="p">)</span>
+
+	<span class="p">//</span> <span class="err">判断元素是否在集合中</span>
+	<span class="n">is</span> <span class="p">,</span><span class="n">err</span><span class="p">:=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">SIsMember</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">,</span><span class="s2">"huolongguo"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"火龙果是水果吗？"</span><span class="p">,</span><span class="n">is</span><span class="p">)</span>
+
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">SAdd</span><span class="p">(</span><span class="s2">"shucaiset"</span><span class="p">,</span><span class="s2">"xihongshi"</span><span class="p">)</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">SAdd</span><span class="p">(</span><span class="s2">"shucaiset"</span><span class="p">,</span><span class="s2">"baicai"</span><span class="p">)</span>
+
+
+	<span class="p">//</span> <span class="err">求交集</span>
+	<span class="k">inter</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">SInter</span><span class="p">(</span><span class="s2">"fruitset"</span><span class="p">,</span><span class="s2">"shucaiset"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">inter</span><span class="p">)</span>
+
+
+	<span class="p">/*</span>
+	<span class="err">水果的集合</span><span class="p">:</span> <span class="p">[</span><span class="n">apple</span> <span class="n">huolongguo</span> <span class="n">xihongshi</span> <span class="n">banana</span><span class="p">]</span>
+	<span class="err">火龙果是水果吗？</span> <span class="nb">true</span>
+	<span class="p">[</span><span class="n">xihongshi</span><span class="p">]</span>
+
+
+	 <span class="p">*/</span>
 
 
 <span class="p">}</span>
 
-<span class="n">func</span> <span class="n">json_to_redis</span><span class="p">(</span><span class="n">conn</span> <span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">){</span>
+<span class="p">//</span> <span class="n">hash</span> <span class="err">操作</span>
 
-	<span class="n">val</span> <span class="p">:=</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span><span class="p">{</span><span class="s2">"name"</span><span class="p">:</span><span class="s2">"zhangsan"</span><span class="p">,</span>
-		<span class="s2">"age"</span><span class="p">:</span><span class="s2">"10"</span><span class="p">,</span>
-		<span class="p">}</span>
+<span class="n">func</span> <span class="n">set_hash</span><span class="p">(){</span>
 
-	<span class="n">v</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">json</span><span class="p">.</span><span class="n">Marshal</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-	<span class="n">n</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"set"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="n">v</span><span class="p">)</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="k">if</span> <span class="n">n</span> <span class="p">==</span> <span class="n">int64</span><span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="p">{</span>
-		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"success"</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">向名称为</span> <span class="n">person</span> <span class="err">的</span> <span class="n">hash</span> <span class="err">中添加元素</span> <span class="n">name</span>
+	<span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HSet</span><span class="p">(</span><span class="s2">"person"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"zhangsan"</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"hset error"</span><span class="p">)</span>
 	<span class="p">}</span>
 
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>  <span class="p">//</span> <span class="n">OK</span> <span class="k">string</span>
-	<span class="n">rel</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Bytes</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"get"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">))</span>
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span>  <span class="p">//</span> <span class="p">[</span><span class="m">123</span> <span class="m">34</span> <span class="m">97</span> <span class="m">103</span> <span class="m">101</span> <span class="m">34</span> <span class="m">58</span> <span class="m">34</span> <span class="p">]</span>
+	<span class="p">//</span> <span class="err">批量地向名称为</span> <span class="n">person2</span> <span class="err">的</span> <span class="n">hash</span> <span class="err">中添加元素</span> <span class="n">name</span> <span class="err">和</span> <span class="n">age</span>
+
+	<span class="n">err</span><span class="p">=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HMSet</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">,</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="n">interface</span><span class="p">{}{</span><span class="s2">"name"</span><span class="p">:</span><span class="s2">"zhuxi"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">:</span><span class="m">10</span><span class="p">,</span><span class="s2">"sex"</span><span class="p">:</span><span class="s2">"nan"</span><span class="p">}).</span><span class="n">Err</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"hmset error"</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="p">//</span> <span class="err">获取</span><span class="n">hash</span> <span class="err">字段的个数</span>
+	<span class="n">Helen</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HLen</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="s2">"hlen error"</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">Helen</span><span class="p">)</span>
 
 
-	<span class="n">var</span> <span class="n">r</span> <span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span> <span class="p">=</span> <span class="n">make</span><span class="p">(</span><span class="n">map</span><span class="p">[</span><span class="k">string</span><span class="p">]</span><span class="k">string</span><span class="p">)</span>
 
-	<span class="n">err</span><span class="p">=</span> <span class="n">json</span><span class="p">.</span><span class="n">Unmarshal</span><span class="p">(</span><span class="n">rel</span><span class="p">,&amp;</span><span class="n">r</span><span class="p">)</span>
+	<span class="n">val</span><span class="p">,</span><span class="n">_</span> <span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HGet</span><span class="p">(</span><span class="s2">"person"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="p">//</span> <span class="err">批量获取名为</span> <span class="n">person2</span> <span class="err">的</span> <span class="n">hash</span> <span class="err">中的指定字段的值</span><span class="p">.</span>
 
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>        <span class="p">//</span> <span class="n">map</span><span class="p">[</span><span class="n">age</span><span class="p">:</span><span class="m">10</span> <span class="n">name</span><span class="p">:</span><span class="n">zhangsan</span><span class="p">]</span>
+	<span class="n">valor</span><span class="p">,</span> <span class="n">_</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HMGet</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">,</span><span class="s2">"sex"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valor</span><span class="p">)</span>
 
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span>  <span class="p">//</span> <span class="n">zhangsan</span>
+	<span class="p">//</span> <span class="err">获取</span><span class="n">hash</span> <span class="err">的所有值，结果是一个</span><span class="n">map</span>
+	<span class="n">valall</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HGetAll</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valall</span><span class="p">)</span>
 
+	<span class="p">//</span> <span class="err">删除名为</span> <span class="n">person2</span> <span class="err">的</span> <span class="n">age</span> <span class="err">字段</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">HDel</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">,</span><span class="s2">"age"</span><span class="p">)</span>
+
+	<span class="n">valall</span><span class="p">,</span><span class="n">_</span><span class="p">=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HGetAll</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valall</span><span class="p">)</span>
+
+	<span class="p">//</span> <span class="n">redis</span> <span class="err">设置</span><span class="n">hash</span><span class="err">过期时间</span>
+	<span class="n">redisdb</span><span class="p">.</span><span class="n">Expire</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">,</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">)</span>
+
+	<span class="n">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="n">time</span><span class="p">.</span><span class="n">Second</span> <span class="p">*</span> <span class="m">2</span><span class="p">)</span>
+
+	<span class="n">valall</span><span class="p">,</span><span class="n">_</span><span class="p">=</span><span class="n">redisdb</span><span class="p">.</span><span class="n">HGetAll</span><span class="p">(</span><span class="s2">"person2"</span><span class="p">).</span><span class="n">Result</span><span class="p">()</span>
+	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">valall</span><span class="p">)</span>
+
+	<span class="p">/*</span>
+
+	<span class="m">3</span>
+	<span class="n">zhangsan</span>
+	<span class="p">[</span><span class="n">zhuxi</span> <span class="m">10</span> <span class="n">nan</span><span class="p">]</span>
+	<span class="n">map</span><span class="p">[</span><span class="n">name</span><span class="p">:</span><span class="n">zhuxi</span> <span class="n">age</span><span class="p">:</span><span class="m">10</span> <span class="n">sex</span><span class="p">:</span><span class="n">nan</span><span class="p">]</span>
+	<span class="n">map</span><span class="p">[</span><span class="n">name</span><span class="p">:</span><span class="n">zhuxi</span> <span class="n">sex</span><span class="p">:</span><span class="n">nan</span><span class="p">]</span>
+	<span class="n">map</span><span class="p">[]</span>
+	 <span class="p">*/</span>
 
 
 
 
 <span class="p">}</span>
 
-<span class="n">func</span> <span class="n">list_operate</span><span class="p">(</span><span class="n">conn</span> <span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">){</span>
 
-	<span class="n">n</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"lpush"</span><span class="p">,</span><span class="s2">"dblist"</span><span class="p">,</span><span class="s2">"mysql"</span><span class="p">,</span><span class="s2">"oracle"</span><span class="p">,</span><span class="s2">"mongo"</span><span class="p">,</span><span class="s2">"中国"</span><span class="p">,</span><span class="s2">"test"</span><span class="p">)</span>
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="p">//</span> <span class="err">连接池</span>
 
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>  <span class="p">//</span><span class="m">7</span>
+<span class="p">/*</span>
+<span class="err">初始化的时候加入参数</span> 	<span class="n">PoolSize</span><span class="p">:</span> <span class="m">5</span><span class="p">,</span>
+ <span class="p">*/</span>
 
-	<span class="n">rel</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"lpop"</span><span class="p">,</span><span class="s2">"dblist"</span><span class="p">))</span>
+<span class="n">func</span> <span class="n">connectPool</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">wg</span> <span class="p">:=</span> <span class="n">sync</span><span class="p">.</span><span class="n">WaitGroup</span><span class="p">{}</span>
+	<span class="n">wg</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="m">15</span><span class="p">)</span>
 
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span> <span class="p">//</span> <span class="n">mongo</span>
+	<span class="n">for</span> <span class="n">i</span> <span class="p">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">105</span><span class="p">;</span> <span class="n">i</span><span class="p">++</span> <span class="p">{</span>
+		<span class="n">go</span> <span class="n">func</span><span class="p">()</span> <span class="p">{</span>
+			<span class="n">defer</span> <span class="n">wg</span><span class="p">.</span><span class="n">Done</span><span class="p">()</span>
 
-	<span class="n">relrange</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Values</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"lrange"</span><span class="p">,</span><span class="s2">"dblist"</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">))</span>
+			<span class="n">for</span> <span class="n">j</span> <span class="p">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">j</span> <span class="p">&lt;</span> <span class="m">100</span><span class="p">;</span> <span class="n">j</span><span class="p">++</span> <span class="p">{</span>
+				<span class="n">_</span> <span class="p">=</span> <span class="n">redisdb</span><span class="p">.</span><span class="k">Set</span><span class="p">(</span><span class="n">fmt</span><span class="p">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s2">"name%d"</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="n">fmt</span><span class="p">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s2">"xys%d"</span><span class="p">,</span> <span class="n">j</span><span class="p">),</span> <span class="m">0</span><span class="p">).</span><span class="n">Err</span><span class="p">()</span>
+				<span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="p">=</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">Get</span><span class="p">(</span><span class="n">fmt</span><span class="p">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s2">"name%d"</span><span class="p">,</span> <span class="n">j</span><span class="p">)).</span><span class="n">Result</span><span class="p">()</span>
+			<span class="p">}</span>
 
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">relrange</span><span class="p">))</span>  <span class="p">//</span> <span class="p">[]</span><span class="n">interface</span> <span class="p">{}</span>
-
-	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">relrange</span> <span class="p">{</span>
-
-		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="p">//[]</span><span class="n">uint8</span>
-		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">v</span><span class="p">.([]</span><span class="n">byte</span><span class="p">))</span> <span class="p">//</span> <span class="p">[</span><span class="m">111</span> <span class="m">114</span> <span class="m">97</span> <span class="m">99</span> <span class="m">108</span> <span class="m">101</span><span class="p">]</span> <span class="err">通过接口的断言来转换类型</span>
-
-		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">.([]</span><span class="n">byte</span><span class="p">)))</span> <span class="p">//</span> <span class="n">mongo</span>
-
-
+			<span class="n">fmt</span><span class="p">.</span><span class="n">Printf</span><span class="p">(</span> <span class="s2">"PoolStats, TotalConns: %+v </span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">redisdb</span><span class="p">.</span><span class="n">PoolStats</span><span class="p">()</span> <span class="p">)</span>
+		<span class="p">}()</span>
 	<span class="p">}</span>
 
+	<span class="n">wg</span><span class="p">.</span><span class="nf">Wait</span><span class="p">()</span>
+
+	<span class="p">/*</span>
+
+	<span class="err">上面的例子启动了</span> <span class="m">10</span> <span class="err">个</span> <span class="n">routine</span> <span class="err">来不断向</span> <span class="n">redis</span> <span class="err">读写数据</span><span class="p">,</span> <span class="err">然后我们通过</span> <span class="n">client</span><span class="p">.</span><span class="n">PoolStats</span><span class="p">()</span> <span class="err">获取连接池的信息</span><span class="p">.</span>
+	<span class="err">运行这个例子</span><span class="p">,</span> <span class="err">输出如下</span><span class="p">:</span>
+
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2938</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">2</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2955</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">2</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2959</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2960</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2962</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2964</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2966</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2966</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">2</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2968</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2970</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">1</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2970</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">2</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2972</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">2</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2972</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">3</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2974</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">4</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
+	<span class="n">PoolStats</span><span class="p">,</span> <span class="n">TotalConns</span><span class="p">:</span> <span class="p">&amp;{</span><span class="n">Hits</span><span class="p">:</span><span class="m">2996</span> <span class="n">Misses</span><span class="p">:</span><span class="m">5</span> <span class="n">Timeouts</span><span class="p">:</span><span class="m">0</span> <span class="n">TotalConns</span><span class="p">:</span><span class="m">5</span> <span class="n">IdleConns</span><span class="p">:</span><span class="m">5</span> <span class="n">StaleConns</span><span class="p">:</span><span class="m">0</span><span class="p">}</span>
 
 
+	<span class="err">通过输出可以看到</span><span class="p">,</span> <span class="err">此时最大的连接池数量确实是</span> <span class="m">5</span> <span class="err">了</span><span class="p">(</span><span class="err">不加连接池的话是</span><span class="m">40</span><span class="p">),</span> <span class="err">并且一开始时</span><span class="p">,</span> <span class="err">因为</span> <span class="n">coroutine</span> <span class="err">的数量大于</span> <span class="m">5</span><span class="p">,</span>
+	<span class="err">会造成</span> <span class="n">redis</span> <span class="err">连接不足的情况</span><span class="p">(</span><span class="err">反映在</span> <span class="n">IdleConns</span> <span class="err">上就是前几次的输出</span> <span class="n">IdleConns</span> <span class="err">一直是</span> <span class="m">1</span> <span class="p">),</span>
+	<span class="err">当某个</span> <span class="n">coroutine</span> <span class="err">结束后</span><span class="p">,</span> <span class="err">会释放此</span> <span class="n">redis</span> <span class="err">连接</span><span class="p">,</span> <span class="err">因此</span> <span class="n">IdleConns</span> <span class="err">会增加</span><span class="p">.</span>
+
+
+	<span class="err">在</span><span class="n">linux</span> <span class="err">每隔</span><span class="m">0.1</span> <span class="err">秒查看</span><span class="n">redis</span> <span class="err">连接数：</span> <span class="err">只有</span><span class="m">5</span><span class="err">个链接</span>
+
+
+	<span class="n">watch</span> <span class="p">-</span><span class="n">n</span> <span class="m">0.1</span>  <span class="p">-</span><span class="n">d</span> <span class="s2">"netstat -antp | grep redis"</span>
+
+	 <span class="p">*/</span>
 <span class="p">}</span>
 
-<span class="n">func</span> <span class="n">hash_operate</span><span class="p">(</span><span class="n">conn</span> <span class="n">redis</span><span class="p">.</span><span class="n">Conn</span><span class="p">){</span>
 
-	<span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hmset"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="s2">"val1"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">,</span><span class="m">10</span><span class="p">)</span>
-
-	<span class="n">rel</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hget"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">)</span>
-
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">rel</span><span class="p">))</span> <span class="p">//</span> <span class="p">[]</span><span class="n">uint8</span>
-
-	<span class="n">c_rel</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hget"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">))</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel</span><span class="p">)</span> <span class="p">//</span> <span class="n">val1</span>
-
-	<span class="n">c_rel1</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Int64</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hget"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">))</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel1</span><span class="p">)</span> <span class="p">//</span> <span class="m">10</span>
-
-	<span class="n">rel2</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMGET"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">)</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">rel2</span><span class="p">))</span>  <span class="p">//</span> <span class="p">[]</span><span class="n">interface</span> <span class="p">{}</span>
-
-
-	<span class="n">c_rel2</span><span class="p">,</span><span class="n">_</span> <span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Strings</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMGET"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">,</span><span class="s2">"key1"</span><span class="p">,</span><span class="s2">"key2"</span><span class="p">))</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel2</span><span class="p">)</span>  <span class="p">//</span> <span class="p">[</span><span class="n">val1</span> <span class="m">10</span><span class="p">]</span>
-
-
-	<span class="n">rel3</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hgetall"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">)</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">rel3</span><span class="p">))</span> <span class="p">//</span> <span class="p">[]</span><span class="n">interface</span> <span class="p">{}</span>
-
-	<span class="n">c_rel3</span><span class="p">,</span><span class="n">_</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Values</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hgetall"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">))</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel3</span><span class="p">)</span> <span class="p">//</span> <span class="p">[[</span><span class="m">107</span> <span class="m">101</span> <span class="m">121</span> <span class="m">49</span><span class="p">]</span> <span class="p">[</span><span class="m">118</span> <span class="m">97</span> <span class="m">108</span> <span class="m">49</span><span class="p">]</span> <span class="p">[</span><span class="m">107</span> <span class="m">101</span> <span class="m">121</span> <span class="m">50</span><span class="p">]</span> <span class="p">[</span><span class="m">49</span> <span class="m">48</span><span class="p">]]</span>
-
-	<span class="n">for</span> <span class="n">_</span><span class="p">,</span><span class="n">v</span> <span class="p">:=</span> <span class="k">range</span> <span class="n">c_rel3</span><span class="p">{</span>
-
-		<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="k">string</span><span class="p">(</span><span class="n">v</span><span class="p">.([]</span><span class="n">byte</span><span class="p">)))</span>
-		<span class="p">/*</span>
-		<span class="n">key1</span>
-		<span class="n">val1</span>
-		<span class="n">key2</span>
-		<span class="m">10</span>
-
-		 <span class="p">*/</span>
-	<span class="p">}</span>
-
-	<span class="n">c_rel5</span> <span class="p">,</span><span class="n">_</span><span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Strings</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"hgetall"</span><span class="p">,</span><span class="s2">"table"</span><span class="p">))</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">c_rel5</span><span class="p">)</span> <span class="p">//</span> <span class="p">[</span><span class="n">key1</span> <span class="n">val1</span> <span class="n">key2</span> <span class="m">10</span><span class="p">]</span>
-
-
-<span class="p">}</span>
+<span class="p">//</span> <span class="err">订阅</span>
 
 <span class="n">func</span> <span class="n">main</span><span class="p">(){</span>
 
-	<span class="n">conn</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Dial</span><span class="p">(</span><span class="s2">"tcp"</span><span class="p">,</span><span class="s2">"127.0.0.1:6379"</span><span class="p">)</span>
+	<span class="n">err</span><span class="p">:=</span><span class="n">init_redis</span><span class="p">()</span>
 
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span><span class="c1">!=nil{
+</span>		<span class="n">return</span>
+	<span class="p">}</span>
 
-	<span class="n">defer</span> <span class="n">conn</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
+	<span class="p">//</span><span class="n">op_string</span><span class="p">()</span>
+	<span class="p">//</span><span class="n">op_list</span><span class="p">()</span>
+	<span class="p">//</span><span class="n">set_list</span><span class="p">()</span>
 
-	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"set"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"wd"</span><span class="p">,</span><span class="s2">"ex"</span><span class="p">,</span><span class="m">5</span><span class="p">)</span>
+	<span class="p">//</span><span class="n">set_hash</span><span class="p">()</span>
 
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+	<span class="n">connectPool</span><span class="p">()</span>
 
-	<span class="n">username</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"GET"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">))</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"expire"</span><span class="p">,</span><span class="s2">"name"</span><span class="p">,</span><span class="s2">"35"</span><span class="p">)</span>
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">_</span> <span class="p">,</span><span class="n">err</span> <span class="p">=</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HSET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">,</span><span class="s2">"mao"</span><span class="p">)</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMSET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">,</span><span class="s2">"maomao"</span><span class="p">,</span><span class="s2">"user2"</span><span class="p">,</span><span class="s2">"zhangsan"</span><span class="p">,</span><span class="s2">"user3"</span><span class="p">,</span><span class="s2">"wangwu"</span><span class="p">)</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
-
-	<span class="n">_</span><span class="p">,</span><span class="n">err</span> <span class="p">=</span> <span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"expire"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="m">30</span><span class="p">)</span>
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">hashuser</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="k">String</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HGET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">))</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">hashuser</span><span class="p">)</span>
-
-	<span class="n">hashusers</span><span class="p">,</span><span class="n">err</span> <span class="p">:=</span> <span class="n">redis</span><span class="p">.</span><span class="n">Strings</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"HMGET"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">,</span><span class="s2">"user1"</span><span class="p">,</span><span class="s2">"user2"</span><span class="p">))</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span> <span class="n">reflect</span><span class="p">.</span><span class="n">TypeOf</span><span class="p">(</span><span class="n">hashusers</span><span class="p">))</span>  <span class="p">//[]</span><span class="k">string</span>
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">hashusers</span><span class="p">)</span>                   <span class="p">//</span> <span class="p">[</span><span class="n">maomao</span> <span class="n">zhangsan</span><span class="p">]</span>
-
-	<span class="n">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="m">3</span> <span class="p">*</span> <span class="n">time</span><span class="p">.</span><span class="n">Second</span><span class="p">)</span>
-
-	<span class="n">is_exist</span><span class="p">,</span><span class="n">err</span><span class="p">:=</span><span class="n">redis</span><span class="p">.</span><span class="n">Bool</span><span class="p">(</span><span class="n">conn</span><span class="p">.</span><span class="k">Do</span><span class="p">(</span><span class="s2">"exists"</span><span class="p">,</span><span class="s2">"hashuser"</span><span class="p">))</span>
-
-	<span class="n">process_err</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-	<span class="n">fmt</span><span class="p">.</span><span class="n">Println</span><span class="p">(</span><span class="n">is_exist</span><span class="p">)</span>
-
-	<span class="n">json_to_redis</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
-
-	<span class="n">list_operate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
-
-	<span class="n">hash_operate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
-
-<span class="p">}</span>	
+<span class="p">}</span>
 </code></pre></div></div>
 
 <p>参考：</p>
 
-<p><a href="https://blog.csdn.net/u010649766/article/details/79623972">https://blog.csdn.net/u010649766/article/details/79623972</a>	
-<a href="https://www.liwenzhou.com/posts/Go/go_redis/">https://www.liwenzhou.com/posts/Go/go_redis/</a></p>
+<p><a href="https://blog.csdn.net/u010649766/article/details/79623972">https://blog.csdn.net/u010649766/article/details/79623972</a></p>
+
+<p><a href="https://www.liwenzhou.com/posts/Go/go_redis/">https://www.liwenzhou.com/posts/Go/go_redis/</a></p>
 
 
   </section>
@@ -478,6 +667,11 @@ func initClient() (err error) {
             </a>
         </li>
         
+        
+        <li class="next">
+            <a href="/2019/11/prometheus%E7%9B%91%E6%8E%A7consul%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C/" data-toggle="tooltip" data-placement="top" title="consul 集群的搭建">下一篇：  <span>consul 集群的搭建</span>
+            </a>
+        </li>
         
     </ul>
 </section>

@@ -81,6 +81,14 @@
 <lastmod>2019-11-09T00:00:00+08:00</lastmod>
 </url>
 <url>
+<loc>http://0.0.0.0:9000/2019/11/prometheus%E7%9B%91%E6%8E%A7consul%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C/</loc>
+<lastmod>2019-11-14T00:00:00+08:00</lastmod>
+</url>
+<url>
+<loc>http://0.0.0.0:9000/2019/11/prometheus%E7%9B%91%E6%8E%A7granafa%E9%85%8D%E7%BD%AE/</loc>
+<lastmod>2019-11-14T00:00:00+08:00</lastmod>
+</url>
+<url>
 <loc>http://0.0.0.0:9000/posts.bk/2015-08-25-HEXO%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</loc>
 </url>
 <url>
@@ -157,5 +165,8 @@
 </url>
 <url>
 <loc>http://0.0.0.0:9000/tags/</loc>
+</url>
+<url>
+<loc>http://0.0.0.0:9000/page/2/</loc>
 </url>
 </urlset>
